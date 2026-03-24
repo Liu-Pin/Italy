@@ -1,623 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Italy Trip Planner (vibe)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>義大利浪漫之旅 2026</title>
+    <style>
+        /* 背景設定：使用義大利街景圖片 */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        /* 玻璃擬態容器 */
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 900px;
+            margin: 20px;
+        }
 
-  <style>
-    :root{
-      --bg:#0b0f17; --card:#121a27; --muted:#7f8aa3; --text:#e9eefc;
-      --line:#1f2a3d; --accent:#7c5cff; --accent2:#2dd4bf; --danger:#ff5c7a;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", sans-serif;
-      background: radial-gradient(1000px 600px at 15% 10%, rgba(124,92,255,.25), transparent 55%),
-                  radial-gradient(900px 500px at 80% 0%, rgba(45,212,191,.18), transparent 60%),
-                  var(--bg);
-      color:var(--text);
-    }
-    header{
-      padding:18px 18px 10px 18px;
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
-      border-bottom:1px solid var(--line);
-      position:sticky; top:0; background:rgba(11,15,23,.75); backdrop-filter: blur(10px);
-      z-index:10;
-    }
-    header h1{font-size:16px; margin:0; letter-spacing:.4px}
-    header .sub{color:var(--muted); font-size:12px}
-    .wrap{display:grid; grid-template-columns: 1.2fr .8fr; gap:14px; padding:14px; max-width:1200px; margin:0 auto;}
-    @media (max-width: 980px){ .wrap{grid-template-columns:1fr;} }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid var(--line);
-      border-radius:14px;
-      overflow:hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35);
-    }
-    .card .hd{
-      padding:12px 12px;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      border-bottom:1px solid var(--line);
-    }
-    .card .hd .title{font-size:13px; font-weight:600}
-    .card .hd .hint{font-size:12px; color:var(--muted)}
-    #map{height:540px; width:100%;}
-    @media (max-width: 980px){ #map{height:420px;} }
+        h1 {
+            text-align: center;
+            color: #d35400; /* 義大利紅 */
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
 
-    .cols{display:grid; grid-template-columns: 1fr; gap:14px;}
-    .pad{padding:12px;}
-    input, select, button, textarea{
-      font:inherit;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.25);
-      color:var(--text);
-      padding:10px 10px;
-      outline:none;
-    }
-    input::placeholder, textarea::placeholder{color:#8b95ad}
-    textarea{resize: vertical; min-height: 72px}
-    button{
-      cursor:pointer;
-      background: linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.7));
-      border:1px solid rgba(124,92,255,.6);
-    }
-    button.secondary{
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--line);
-    }
-    button.danger{
-      background: rgba(255,92,122,.12);
-      border: 1px solid rgba(255,92,122,.35);
-      color: #ffd7df;
-    }
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .row > *{flex:1}
-    .row .fit{flex:0 0 auto}
-    .pill{
-      font-size:11px; color:#cfd6ea; border:1px solid var(--line);
-      padding:6px 10px; border-radius:999px; background: rgba(255,255,255,.04);
-    }
-    .list{display:flex; flex-direction:column; gap:10px;}
-    .item{
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.18);
-      border-radius:12px;
-      padding:10px;
-      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
-    }
-    .item .meta{min-width:0}
-    .item .name{font-weight:700; font-size:13px; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-    .item .desc{font-size:12px; color:var(--muted); line-height:1.35}
-    .item .actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
-    .btn-sm{padding:8px 10px; font-size:12px; border-radius:10px}
-    .tiny{font-size:11px; color:var(--muted)}
-    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
-    @media (max-width:980px){ .grid2{grid-template-columns:1fr;} }
+        .table-wrapper {
+            overflow-x: auto; /* 手機滑動支援 */
+        }
 
-    table{width:100%; border-collapse:separate; border-spacing:0; overflow:hidden;}
-    th, td{border-bottom:1px solid var(--line); padding:10px 8px; font-size:12px; vertical-align:top;}
-    th{color:#cfd6ea; text-align:left; font-weight:700; background: rgba(255,255,255,.03)}
-    tr:hover td{background: rgba(255,255,255,.03)}
-    .td-actions{white-space:nowrap}
-    .muted{color:var(--muted)}
-    .ok{color: #b8ffe5}
-    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:11px;
-      border:1px solid var(--line); padding:2px 6px; border-radius:8px; background: rgba(255,255,255,.05);}
-  </style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #27ae60; /* 義大利綠 */
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
 </head>
-
 <body>
-<header>
-  <div>
-    <h1>🇮🇹 Italy Trip Planner <span class="pill">vibe coding</span></h1>
-    <div class="sub">地圖＋景點庫＋行程表格（自動保存到瀏覽器 localStorage）</div>
-  </div>
-  <div class="row" style="justify-content:flex-end">
-    <button class="secondary btn-sm" id="btnExport">匯出 JSON</button>
-    <button class="danger btn-sm" id="btnReset">重置資料</button>
-  </div>
-</header>
 
-<div class="wrap">
-  <!-- Left: Map -->
-  <section class="card">
-    <div class="hd">
-      <div>
-        <div class="title">🗺️ Map</div>
-        <div class="hint">點 marker 看景點 → 加入 Day 行程</div>
-      </div>
-      <div class="row" style="max-width:420px">
-        <input id="searchPlace" placeholder="搜尋景點（名稱/城市/標籤）" />
-        <button class="secondary btn-sm fit" id="btnFit">Fit</button>
-      </div>
-    </div>
-    <div id="map"></div>
-    <div class="pad tiny">
-      Tips：在地圖上 <span class="kbd">Shift + Click</span> 也可以快速新增景點（會抓點選座標）。
-    </div>
-  </section>
-
-  <!-- Right: Places + Itinerary -->
-  <section class="cols">
-    <section class="card">
-      <div class="hd">
-        <div>
-          <div class="title">📍 Places（景點庫）</div>
-          <div class="hint">你可以把這張表當「資料庫」</div>
-        </div>
-        <div class="row" style="max-width:340px">
-          <select id="cityFilter">
-            <option value="">全部城市</option>
-          </select>
-          <button class="secondary btn-sm fit" id="btnSeed">匯入義大利常見點</button>
-        </div>
-      </div>
-
-      <div class="pad">
-        <div class="grid2">
-          <input id="pName" placeholder="景點名稱（例：Duomo di Milano）" />
-          <input id="pCity" placeholder="城市（例：Milan）" />
-          <input id="pTags" placeholder="標籤（逗號分隔：church, view）" />
-          <select id="pType">
-            <option value="landmark">landmark</option>
-            <option value="museum">museum</option>
-            <option value="food">food</option>
-            <option value="nature">nature</option>
-            <option value="shopping">shopping</option>
-          </select>
-          <input id="pLat" placeholder="緯度 lat（例：45.4642）" />
-          <input id="pLng" placeholder="經度 lng（例：9.1916）" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <textarea id="pNote" placeholder="備註（可空）：例如『建議上頂樓看夕陽』"></textarea>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="btnAddPlace">新增景點</button>
-          <button class="secondary" id="btnUseCenter">用地圖中心座標</button>
-        </div>
-      </div>
-
-      <div class="pad" style="padding-top:0">
-        <div class="list" id="placesList"></div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="hd">
-        <div>
-          <div class="title">🧩 Itinerary（行程表格）</div>
-          <div class="hint">先排順序，再補時間；支持上下移動排序</div>
-        </div>
-        <div class="row" style="max-width:360px; justify-content:flex-end">
-          <select id="daySelect"></select>
-          <button class="secondary btn-sm fit" id="btnAddDay">+ Day</button>
-        </div>
-      </div>
-
-      <div class="pad">
-        <div class="row">
-          <input id="dayTitle" placeholder="當天標題（可選）：例如『羅馬古蹟日』" />
-          <button class="secondary fit" id="btnSaveDayTitle">儲存標題</button>
-        </div>
-      </div>
-
-      <div class="pad" style="padding-top:0">
+<div class="container">
+    <h1>🇮🇹 義大利旅程規劃</h1>
+    
+    <div class="table-wrapper">
         <table>
-          <thead>
-            <tr>
-              <th style="width:70px">順序</th>
-              <th>項目</th>
-              <th style="width:120px">停留</th>
-              <th style="width:140px">備註</th>
-              <th class="td-actions" style="width:180px">操作</th>
-            </tr>
-          </thead>
-          <tbody id="itTable"></tbody>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>行程 / 住宿地點</th>
+                    <th>重要備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>3/26 (四)</td><td>出發 / 抵達義大利</td><td>確認接機/租車</td></tr>
+                <tr><td>3/27 (五)</td><td></td><td></td></tr>
+                <tr><td>3/28 (六)</td><td></td><td></td></tr>
+                <tr><td>3/29 (日)</td><td></td><td></td></tr>
+                <tr><td>3/30 (一)</td><td></td><td></td></tr>
+                <tr><td>3/31 (二)</td><td></td><td></td></tr>
+                <tr><td>4/01 (三)</td><td></td><td></td></tr>
+                <tr><td>4/02 (四)</td><td></td><td></td></tr>
+                <tr style="background: #e8f4fd;"><td>4/03 (五)</td><td class="highlight">佛羅倫斯 ➔ 威尼斯</td><td>搭乘火車</td></tr>
+                <tr><td>4/04 (六)</td><td>威尼斯觀光</td><td>面具、運河</td></tr>
+                <tr style="background: #e8f4fd;"><td>4/05 (日)</td><td class="highlight">威尼斯 ➔ 米蘭</td><td>入住米蘭飯店</td></tr>
+                <tr><td>4/06 (一)</td><td>米蘭購物/市區</td><td>大教堂</td></tr>
+                <tr><td>4/07 (二)</td><td>搭機返程</td><td>收拾行李</td></tr>
+            </tbody>
         </table>
-        <div class="tiny muted" style="margin-top:8px">
-          想更爽：下一步可以加「拖拉排序（drag & drop）」和「路線距離/交通時間估算」。
-        </div>
-      </div>
-    </section>
-  </section>
+    </div>
+
+    <div class="footer">
+        祝你在義大利玩得開心！記得隨時更新行程。
+    </div>
 </div>
 
-<script>
-/** ========= VIBE ITALY PLANNER =========
- *  - Leaflet map (OSM)
- *  - Places list + markers
- *  - Itinerary per day (table), add from place
- *  - LocalStorage persistence
- */
-
-const STORAGE_KEY = "italy_trip_planner_v1";
-
-function uid(prefix="id"){
-  return prefix + "_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
-}
-
-function loadState(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return null;
-  try { return JSON.parse(raw); } catch(e){ return null; }
-}
-function saveState(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
-
-let state = loadState() || {
-  trip: { name: "Italy Trip", createdAt: Date.now() },
-  places: [],
-  days: [
-    { id: uid("day"), title: "", items: [] }
-  ],
-  ui: { selectedDayId: null }
-};
-
-if(!state.ui.selectedDayId) state.ui.selectedDayId = state.days[0].id;
-
-// --- Leaflet Map ---
-const map = L.map('map', { zoomControl: true }).setView([41.9028, 12.4964], 5); // Rome-ish
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19, attribution: '&copy; OpenStreetMap'
-}).addTo(map);
-
-let markersLayer = L.layerGroup().addTo(map);
-
-function rebuildMarkers(filteredPlaces){
-  markersLayer.clearLayers();
-  (filteredPlaces || state.places).forEach(p => {
-    if(typeof p.lat !== "number" || typeof p.lng !== "number") return;
-    const m = L.marker([p.lat, p.lng]).addTo(markersLayer);
-    m.bindPopup(`
-      <b>${escapeHtml(p.name)}</b><br/>
-      <span style="color:#7f8aa3">${escapeHtml(p.city || "")} • ${escapeHtml(p.type || "")}</span><br/>
-      <div style="margin-top:6px;font-size:12px">${escapeHtml(p.note || "")}</div>
-      <div style="margin-top:8px">
-        <button onclick="window.__addToDay('${p.id}')" style="padding:6px 10px;border-radius:10px;border:1px solid #1f2a3d;background:rgba(255,255,255,.06);color:#e9eefc;cursor:pointer;">
-          加入行程（目前 Day）
-        </button>
-      </div>
-    `);
-  });
-}
-
-window.__addToDay = function(placeId){
-  const place = state.places.find(x => x.id === placeId);
-  if(!place) return;
-  addPlaceToItinerary(placeId);
-  // try open itinerary section vibe
-  alert(`已加入：${place.name}`);
-}
-
-// Shift+Click to add place with coordinate
-map.on('click', (e) => {
-  if(!e.originalEvent.shiftKey) return;
-  document.getElementById("pLat").value = e.latlng.lat.toFixed(6);
-  document.getElementById("pLng").value = e.latlng.lng.toFixed(6);
-  document.getElementById("pName").focus();
-});
-
-// --- UI elements ---
-const elPlacesList = document.getElementById("placesList");
-const elCityFilter = document.getElementById("cityFilter");
-const elSearch = document.getElementById("searchPlace");
-
-const elDaySelect = document.getElementById("daySelect");
-const elItTable = document.getElementById("itTable");
-const elDayTitle = document.getElementById("dayTitle");
-
-function escapeHtml(str){
-  return (str ?? "").toString()
-    .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-function currentDay(){
-  return state.days.find(d => d.id === state.ui.selectedDayId) || state.days[0];
-}
-
-function upsertCityOptions(){
-  const cities = Array.from(new Set(state.places.map(p => (p.city||"").trim()).filter(Boolean))).sort();
-  const cur = elCityFilter.value;
-  elCityFilter.innerHTML = `<option value="">全部城市</option>` + cities.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-  elCityFilter.value = cities.includes(cur) ? cur : "";
-}
-
-function rebuildPlacesList(){
-  const q = (elSearch.value || "").trim().toLowerCase();
-  const city = (elCityFilter.value || "").trim();
-  const filtered = state.places.filter(p => {
-    if(city && (p.city||"") !== city) return false;
-    if(!q) return true;
-    const hay = `${p.name} ${p.city} ${(p.tags||[]).join(" ")} ${p.type} ${p.note||""}`.toLowerCase();
-    return hay.includes(q);
-  });
-
-  rebuildMarkers(filtered);
-
-  elPlacesList.innerHTML = filtered.map(p => `
-    <div class="item">
-      <div class="meta">
-        <div class="name">${escapeHtml(p.name)}</div>
-        <div class="desc">
-          ${escapeHtml(p.city || "—")} • <span class="ok">${escapeHtml(p.type||"")}</span>
-          ${p.tags?.length ? ` • <span class="muted">${escapeHtml(p.tags.join(", "))}</span>` : ""}
-          <div class="tiny" style="margin-top:4px">${escapeHtml(p.note || "")}</div>
-        </div>
-        <div class="tiny">(${p.lat?.toFixed?.(5) ?? "?"}, ${p.lng?.toFixed?.(5) ?? "?"})</div>
-      </div>
-      <div class="actions">
-        <button class="secondary btn-sm" onclick="flyToPlace('${p.id}')">定位</button>
-        <button class="btn-sm" onclick="addPlaceToItinerary('${p.id}')">加入 Day</button>
-        <button class="danger btn-sm" onclick="deletePlace('${p.id}')">刪除</button>
-      </div>
-    </div>
-  `).join("");
-
-  saveState();
-}
-
-function flyToPlace(placeId){
-  const p = state.places.find(x => x.id === placeId);
-  if(!p) return;
-  if(typeof p.lat === "number" && typeof p.lng === "number"){
-    map.flyTo([p.lat, p.lng], 13, { duration: 0.8 });
-  }
-}
-
-function deletePlace(placeId){
-  state.places = state.places.filter(p => p.id !== placeId);
-  // Also remove from all itineraries
-  state.days.forEach(d => d.items = d.items.filter(it => it.placeId !== placeId));
-  upsertCityOptions();
-  rebuildDaySelect();
-  rebuildPlacesList();
-  rebuildItineraryTable();
-  saveState();
-}
-
-function rebuildDaySelect(){
-  elDaySelect.innerHTML = state.days.map((d, idx) => {
-    const label = `Day ${idx+1}` + (d.title ? ` • ${d.title}` : "");
-    return `<option value="${d.id}">${escapeHtml(label)}</option>`;
-  }).join("");
-  elDaySelect.value = state.ui.selectedDayId;
-  // update title box
-  elDayTitle.value = currentDay().title || "";
-}
-
-function addDay(){
-  const d = { id: uid("day"), title:"", items:[] };
-  state.days.push(d);
-  state.ui.selectedDayId = d.id;
-  rebuildDaySelect();
-  rebuildItineraryTable();
-  saveState();
-}
-
-function saveDayTitle(){
-  const d = currentDay();
-  d.title = (elDayTitle.value || "").trim();
-  rebuildDaySelect();
-  saveState();
-}
-
-function addPlaceToItinerary(placeId){
-  const p = state.places.find(x => x.id === placeId);
-  if(!p) return;
-  const d = currentDay();
-  d.items.push({
-    id: uid("it"),
-    placeId,
-    stayMin: 90,
-    note: ""
-  });
-  rebuildItineraryTable();
-  saveState();
-}
-
-function moveItem(itemId, dir){
-  const d = currentDay();
-  const idx = d.items.findIndex(x => x.id === itemId);
-  if(idx < 0) return;
-  const nidx = clamp(idx + dir, 0, d.items.length - 1);
-  if(nidx === idx) return;
-  const [it] = d.items.splice(idx,1);
-  d.items.splice(nidx,0,it);
-  rebuildItineraryTable();
-  saveState();
-}
-
-function deleteItem(itemId){
-  const d = currentDay();
-  d.items = d.items.filter(x => x.id !== itemId);
-  rebuildItineraryTable();
-  saveState();
-}
-
-function setItemStay(itemId, value){
-  const d = currentDay();
-  const it = d.items.find(x => x.id === itemId);
-  if(!it) return;
-  const n = parseInt(value,10);
-  it.stayMin = Number.isFinite(n) ? clamp(n, 0, 24*60) : it.stayMin;
-  saveState();
-}
-
-function setItemNote(itemId, value){
-  const d = currentDay();
-  const it = d.items.find(x => x.id === itemId);
-  if(!it) return;
-  it.note = value;
-  saveState();
-}
-
-function rebuildItineraryTable(){
-  const d = currentDay();
-  const rows = d.items.map((it, idx) => {
-    const p = state.places.find(x => x.id === it.placeId);
-    const name = p ? p.name : "(已刪除景點)";
-    const city = p ? p.city : "";
-    return `
-      <tr>
-        <td class="muted">${idx+1}</td>
-        <td>
-          <div style="font-weight:700">${escapeHtml(name)}</div>
-          <div class="tiny muted">${escapeHtml(city)} ${p?.type ? "• " + escapeHtml(p.type) : ""}</div>
-        </td>
-        <td>
-          <input style="width:100%" type="number" min="0" step="5" value="${it.stayMin ?? 0}"
-            oninput="setItemStay('${it.id}', this.value)" />
-          <div class="tiny muted">分鐘</div>
-        </td>
-        <td>
-          <input style="width:100%" value="${escapeHtml(it.note || "")}"
-            oninput="setItemNote('${it.id}', this.value)" placeholder="備註" />
-        </td>
-        <td class="td-actions">
-          <button class="secondary btn-sm" onclick="moveItem('${it.id}', -1)">↑</button>
-          <button class="secondary btn-sm" onclick="moveItem('${it.id}', 1)">↓</button>
-          <button class="secondary btn-sm" onclick="flyToPlace('${it.placeId}')">定位</button>
-          <button class="danger btn-sm" onclick="deleteItem('${it.id}')">刪</button>
-        </td>
-      </tr>
-    `;
-  }).join("");
-
-  elItTable.innerHTML = rows || `<tr><td colspan="5" class="muted">目前 Day 還沒有行程。去左邊 Places 加入幾個吧～</td></tr>`;
-  saveState();
-}
-
-// --- Add Place form ---
-document.getElementById("btnAddPlace").addEventListener("click", () => {
-  const name = document.getElementById("pName").value.trim();
-  const city = document.getElementById("pCity").value.trim();
-  const tags = document.getElementById("pTags").value.split(",").map(s=>s.trim()).filter(Boolean);
-  const type = document.getElementById("pType").value;
-  const note = document.getElementById("pNote").value.trim();
-  const lat = parseFloat(document.getElementById("pLat").value);
-  const lng = parseFloat(document.getElementById("pLng").value);
-
-  if(!name){ alert("請輸入景點名稱"); return; }
-  if(!Number.isFinite(lat) || !Number.isFinite(lng)){
-    alert("請輸入有效座標（或按『用地圖中心座標』，或 Shift+Click 地圖抓座標）");
-    return;
-  }
-
-  state.places.unshift({ id: uid("pl"), name, city, tags, type, note, lat, lng });
-  // clear a bit
-  document.getElementById("pName").value = "";
-  document.getElementById("pTags").value = "";
-  document.getElementById("pNote").value = "";
-
-  upsertCityOptions();
-  rebuildPlacesList();
-  saveState();
-});
-
-document.getElementById("btnUseCenter").addEventListener("click", () => {
-  const c = map.getCenter();
-  document.getElementById("pLat").value = c.lat.toFixed(6);
-  document.getElementById("pLng").value = c.lng.toFixed(6);
-});
-
-elCityFilter.addEventListener("change", rebuildPlacesList);
-elSearch.addEventListener("input", rebuildPlacesList);
-
-// --- Day controls ---
-elDaySelect.addEventListener("change", () => {
-  state.ui.selectedDayId = elDaySelect.value;
-  rebuildDaySelect();
-  rebuildItineraryTable();
-  saveState();
-});
-document.getElementById("btnAddDay").addEventListener("click", addDay);
-document.getElementById("btnSaveDayTitle").addEventListener("click", saveDayTitle);
-
-// --- Export / Reset / Fit ---
-document.getElementById("btnExport").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "italy-trip.json";
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-document.getElementById("btnReset").addEventListener("click", () => {
-  if(!confirm("確定要清空所有資料？（localStorage 會被刪掉）")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  location.reload();
-});
-
-document.getElementById("btnFit").addEventListener("click", () => {
-  if(state.places.length === 0) { map.setView([41.9028, 12.4964], 5); return; }
-  const latlngs = state.places
-    .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))
-    .map(p => [p.lat, p.lng]);
-  if(latlngs.length === 0) return;
-  map.fitBounds(latlngs, { padding:[30,30] });
-});
-
-// Seed Italy common places
-document.getElementById("btnSeed").addEventListener("click", () => {
-  const seed = [
-    { name:"Duomo di Milano", city:"Milan", type:"landmark", tags:["church","view"], note:"可上頂樓看夕陽", lat:45.464167, lng:9.191389 },
-    { name:"Galleria Vittorio Emanuele II", city:"Milan", type:"shopping", tags:["architecture","shopping"], note:"旁邊就是大教堂", lat:45.465833, lng:9.190278 },
-    { name:"Piazza del Duomo", city:"Milan", type:"landmark", tags:["square"], note:"大教堂廣場", lat:45.464444, lng:9.190000 },
-
-    { name:"Ponte Vecchio", city:"Florence", type:"landmark", tags:["bridge","sunset"], note:"傍晚很美", lat:43.767928, lng:11.253144 },
-    { name:"Uffizi Gallery", city:"Florence", type:"museum", tags:["art","booking"], note:"強烈建議預訂時段", lat:43.768700, lng:11.255000 },
-    { name:"Galleria dell'Accademia", city:"Florence", type:"museum", tags:["David","booking"], note:"大衛像", lat:43.776900, lng:11.258300 },
-    { name:"Piazzale Michelangelo", city:"Florence", type:"landmark", tags:["view","sunset"], note:"俯瞰佛羅倫斯夜景", lat:43.762900, lng:11.265700 },
-
-    { name:"Colosseum", city:"Rome", type:"landmark", tags:["ancient","booking"], note:"建議早上第一場", lat:41.890200, lng:12.492200 },
-    { name:"Roman Forum", city:"Rome", type:"landmark", tags:["ancient"], note:"可與斗獸場同日", lat:41.892500, lng:12.485300 },
-    { name:"Pantheon", city:"Rome", type:"landmark", tags:["architecture"], note:"圓頂神殿", lat:41.898610, lng:12.476870 },
-    { name:"Vatican Museums", city:"Vatican", type:"museum", tags:["booking","art"], note:"強烈建議預訂", lat:41.906487, lng:12.453621 },
-    { name:"St. Peter's Basilica", city:"Vatican", type:"landmark", tags:["church","view"], note:"登頂看全景", lat:41.902200, lng:12.453900 },
-
-    { name:"St. Mark's Basilica", city:"Venice", type:"landmark", tags:["church","booking"], note:"早到避人潮", lat:45.434200, lng:12.339000 },
-    { name:"Rialto Bridge", city:"Venice", type:"landmark", tags:["bridge"], note:"日落時段很讚", lat:45.438000, lng:12.335800 },
-    { name:"Burano Island", city:"Venice", type:"landmark", tags:["island","colorful"], note:"彩色島", lat:45.485800, lng:12.416700 },
-
-    { name:"Manarola (Cinque Terre)", city:"Cinque Terre", type:"nature", tags:["sea","sunset"], note:"五漁村經典海景", lat:44.107500, lng:9.729700 },
-    { name:"Vernazza (Cinque Terre)", city:"Cinque Terre", type:"nature", tags:["sea"], note:"港灣視角很美", lat:44.134000, lng:9.683900 },
-  ];
-
-  // avoid duplicates by name+city
-  const existingKey = new Set(state.places.map(p => `${p.name}__${p.city}`));
-  seed.forEach(s => {
-    const key = `${s.name}__${s.city}`;
-    if(existingKey.has(key)) return;
-    state.places.push({ id: uid("pl"), ...s });
-  });
-
-  upsertCityOptions();
-  rebuildPlacesList();
-  saveState();
-  document.getElementById("btnFit").click();
-});
-
-// --- init render ---
-upsertCityOptions();
-rebuildDaySelect();
-rebuildPlacesList();
-rebuildItineraryTable();
-saveState();
-</script>
 </body>
 </html>
