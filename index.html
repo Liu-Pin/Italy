@@ -3,121 +3,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>義大利浪漫之旅 2026</title>
+    <title>Chibi Italy Adventure 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 背景設定：使用義大利街景圖片 */
         body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: url('https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            /* 🌸 背景已換成 Q 版動漫風義大利 🌸 */
+            background-image: url('https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #333;
+            background-position: center;
+            background-attachment: fixed;
         }
-
-        /* 玻璃擬態容器 */
-        .container {
-            background: rgba(255, 255, 255, 0.85);
+        
+        /* 讓介面更圓潤可愛的 Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            width: 90%;
-            max-width: 900px;
-            margin: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 24px; /* 超圓潤邊角 */
         }
-
-        h1 {
-            text-align: center;
-            color: #d35400; /* 義大利紅 */
-            margin-bottom: 20px;
-            font-size: 2rem;
+        
+        /* 美化捲動軸 */
+        .table-container::-webkit-scrollbar { height: 10px; width: 10px; }
+        .table-container::-webkit-scrollbar-thumb { background: #a7f3d0; border-radius: 5px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f5f9; }
+        
+        .sticky-col { box-shadow: 3px 0 6px -2px rgba(0,0,0,0.05); }
+        .sticky-head { box-shadow: 0 3px 6px -2px rgba(0,0,0,0.05); }
+        
+        /* 編輯中卡片的可愛發亮效果 */
+        .editing-card { 
+            border: 3px solid #60a5fa !important; 
+            background-color: #eff6ff !important; 
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.6) !important;
+            transform: scale(1.02);
         }
-
-        .table-wrapper {
-            overflow-x: auto; /* 手機滑動支援 */
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        th {
-            background-color: #27ae60; /* 義大利綠 */
-            color: white;
-            padding: 15px;
-            text-align: left;
-        }
-
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .highlight {
-            font-weight: bold;
-            color: #2980b9;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #666;
+        
+        /* 表單輸入框優化 */
+        input, select {
+            border-radius: 12px !important;
         }
     </style>
 </head>
-<body>
+<body class="p-3 md:p-8 min-h-screen text-slate-800 antialiased font-sans">
 
-<div class="container">
-    <h1>🇮🇹 義大利旅程規劃</h1>
-    
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>日期</th>
-                    <th>行程 / 住宿地點</th>
-                    <th>重要備註</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>3/26 (四)</td><td>出發 / 抵達義大利</td><td>確認接機/租車</td></tr>
-                <tr><td>3/27 (五)</td><td></td><td></td></tr>
-                <tr><td>3/28 (六)</td><td></td><td></td></tr>
-                <tr><td>3/29 (日)</td><td></td><td></td></tr>
-                <tr><td>3/30 (一)</td><td></td><td></td></tr>
-                <tr><td>3/31 (二)</td><td></td><td></td></tr>
-                <tr><td>4/01 (三)</td><td></td><td></td></tr>
-                <tr><td>4/02 (四)</td><td></td><td></td></tr>
-                <tr style="background: #e8f4fd;"><td>4/03 (五)</td><td class="highlight">佛羅倫斯 ➔ 威尼斯</td><td>搭乘火車</td></tr>
-                <tr><td>4/04 (六)</td><td>威尼斯觀光</td><td>面具、運河</td></tr>
-                <tr style="background: #e8f4fd;"><td>4/05 (日)</td><td class="highlight">威尼斯 ➔ 米蘭</td><td>入住米蘭飯店</td></tr>
-                <tr><td>4/06 (一)</td><td>米蘭購物/市區</td><td>大教堂</td></tr>
-                <tr><td>4/07 (二)</td><td>搭機返程</td><td>收拾行李</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <script>
+        // 💣 錯誤處理器 (防止舊資料當機)
+        window.onerror = function() {
+            document.body.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:rgba(0,0,0,0.85); color:white; position:fixed; top:0; left:0; width:100%; z-index:9999; text-align:center; padding:20px;">
+                <h1 style="font-size:3rem; color:#ff4d4f; margin-bottom:1rem;">⚠️ 資料同步發生衝突</h1>
+                <p style="font-size:1.2rem; margin-bottom:2rem;">別擔心！這通常是因為瀏覽器殘留了不同版本的行程資料。</p>
+                <button onclick="localStorage.removeItem('italy_schedule'); location.reload();" style="padding:18px 36px; font-size:1.5rem; background:#ff4d4f; color:white; border:none; border-radius:15px; cursor:pointer; font-weight:bold; box-shadow:0 5px 20px rgba(255,77,79,0.5);">
+                    🗑️ 點此「重置」以修復網頁
+                </button>
+            </div>`;
+            return false;
+        };
+    </script>
 
-    <div class="footer">
-        祝你在義大利玩得開心！記得隨時更新行程。
-    </div>
-</div>
+    <header class="mb-6 text-center text-white drop-shadow-lg relative p-4 bg-black/10 rounded-3xl backdrop-blur-sm border border-white/20">
+        <h1 class="text-3xl md:text-4xl font-black tracking-tight mb-4 flex items-center justify-center gap-3">
+             <span style="color:#d9f99d"></span> 品成&尹瑄 Italy Adventure❤️
+        </h1>
+        
+        <div class="inline-flex flex-wrap justify-center gap-3 bg-white/90 p-3 rounded-2xl shadow-inner border border-white">
+            <button onclick="exportData()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl transition shadow-md flex items-center gap-2 transform hover:scale-105">
+                📤 1. 複製「同步密碼」
+            </button>
+            <button onclick="importData()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition shadow-md flex items-center gap-2 transform hover:scale-105">
+                📥 2. 貼上「同步密碼」合併
+            </button>
+        </div>
+    </header>
 
+    <main class="max-w-7xl mx-auto space-y-6">
+        
+        <div class="glass-panel p-6 transition-all duration-300 border-2 border-white" id="form-container">
+            <h2 class="text-xl font-bold text-emerald-900 mb-5 flex items-center gap-2" id="form-title">
+                ✏️ <span id="form-title-text">新增旅程片段</span>
+            </h2>
+            <form id="schedule-form" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[130px]">
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">日期 <span class="text-red-500">*</span></label>
+                    <input type="date" id="event-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm" required>
+                </div>
+                <div class="flex-1 min-w-[100px]">
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">開始時間 <span class="text-red-500">*</span></label>
+                    <input type="time" id="start-time" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm" required>
+                </div>
+                <div class="flex-1 min-w-[100px]">
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">結束時間 <span class="text-[10px] font-medium text-emerald-700">(留白同上)</span></label>
+                    <input type="time" id="end-time" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm">
+                </div>
+                <div class="flex-1 min-w-[130px]">
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">下一站交通</label>
+                    <select id="event-mode" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm text-sm">
+                        <option value="">🔄 自動繼承上一站</option>
+                        <option value="driving">🚗 開車</option>
+                        <option value="transit">🚂 大眾運輸</option>
+                        <option value="walking">🚶 步行</option>
+                    </select>
+                </div>
+                <div class="flex-[1.5] min-w-[160px]">
+                    <label class="block text-xs font-bold text-blue-700 mb-1.5 pl-1">📍 實際地點</label>
+                    <input type="text" id="event-location" placeholder="留白則自動繼承上一站..." class="w-full px-4 py-2.5 rounded-xl border border-blue-200 focus:ring-2 focus:ring-blue-400 bg-blue-50 text-sm shadow-inner">
+                </div>
+                <div class="flex-[1.5] min-w-[160px]">
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">行程內容 <span class="text-red-500">*</span></label>
+                    <input type="text" id="event-title" placeholder="例如：參觀競技場/吃冰淇淋" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 text-sm shadow-sm" required>
+                </div>
+                
+                <div class="flex gap-2 min-w-[180px]">
+                    <button type="submit" id="submit-btn" class="flex-1 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition h-[46px] shadow-lg transform hover:scale-105 Active:scale-95">
+                        ➕ 新增
+                    </button>
+                    <button type="button" id="cancel-edit-btn" onclick="cancelEdit()" class="hidden px-5 py-2.5 bg-slate-400 hover:bg-slate-500 text-white font-bold rounded-xl transition h-[46px] shadow-md">
+                        取消
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="glass-panel p-5 md:p-7 min-h-[400px]">
+            <div class="flex gap-3 mb-6 border-b border-slate-200 pb-5 overflow-x-auto">
+                <button id="btn-daily" onclick="switchView('daily')" class="px-5 py-2.5 font-bold rounded-xl text-slate-500 hover:bg-slate-100 transition whitespace-nowrap">📅 單日詳情</button>
+                <button id="btn-timetable" onclick="switchView('timetable')" class="px-5 py-2.5 font-bold rounded-xl bg-emerald-100 text-emerald-900 transition whitespace-nowrap shadow-sm border border-emerald-200">🗓️ 課表模式</button>
+                <button id="btn-nav" onclick="switchView('nav')" class="px-5 py-2.5 font-bold rounded-xl text-blue-700 hover:bg-blue-100 transition whitespace-nowrap">📱 智慧區間導航</button>
+            </div>
+
+            <div id="view-daily" class="hidden">
+                <div id="date-tabs" class="flex flex-wrap gap-2.5 mb-6 border-b border-slate-200 pb-5"></div>
+                <div id="daily-timeline" class="space-y-5 pl-2 border-l-4 border-emerald-200 min-h-[300px]"></div>
+            </div>
+
+            <div id="view-timetable" class="block">
+                <div class="table-container overflow-auto max-h-[600px] border border-slate-300 rounded-2xl bg-slate-50/50">
+                    <table class="w-full text-left border-collapse min-w-[900px]">
+                        <thead id="timetable-head" class="bg-slate-200/90 text-slate-800 text-sm sticky top-0 z-20 sticky-head backdrop-blur-sm"></thead>
+                        <tbody id="timetable-body" class="bg-white/80 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-nav" class="hidden">
+                <div class="flex flex-col gap-4 mb-4">
+                    <div class="w-full md:w-1/3">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">選擇要出發的日期：</label>
+                        <select id="nav-date-select" onchange="generateNavLinks()" class="w-full px-5 py-3 rounded-xl border border-blue-300 shadow-sm font-bold text-blue-900 bg-blue-50"></select>
+                    </div>
+                    <div id="nav-links-container" class="mt-4 p-5 bg-slate-100/80 border border-slate-200 rounded-2xl space-y-3 shadow-inner"></div>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="text-center mt-10 pb-6">
+            <button onclick="localStorage.removeItem('italy_schedule'); location.reload();" class="text-xs text-slate-400 hover:text-red-500 hover:font-bold underline transition-all">⚠️ 重置所有行程資料 (Reset)</button>
+        </div>
+    </main>
+
+    <script>
+        let schedule = [];
+        try { schedule = JSON.parse(localStorage.getItem('italy_schedule')) || []; } catch(e) { schedule = []; }
+        let currentView = 'timetable';
+        let selectedDate = '';
+        let editingId = null;
+
+        // ==========================================
+        // ★ 更新：無代碼同步功能 (使用 Base64 編碼)
+        // ==========================================
+        
+        // 智慧型 UTF-8 轉 Base64 (防止中文字編碼錯誤)
+        function utoa(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        // 智慧型 Base64 轉 UTF-8
+        function atou(str) {
+            try {
+                return decodeURIComponent(atob(str).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+            } catch(e) {
+                return null; // 解碼失敗
+            }
+        }
+
+        function exportData() {
+            if (schedule.length === 0) { alert('🧩 先加點行程再匯出吧！'); return; }
+            
+            // 1. JSON 轉字串 -> 2. Base64 編碼 (去除括弧代碼感)
+            const rawStr = JSON.stringify(schedule);
+            const encodedKey = utoa(rawStr);
+
+            if (!encodedKey) { alert('❌ 密碼生成失敗，請重試。'); return; }
+
+            navigator.clipboard.writeText(encodedKey).then(() => {
+                alert('🎉 成功！「同步密碼」已複製。\n\n它是一長串沒有括弧的文字，請直接貼給同行者！');
+            }).catch(err => {
+                prompt('請複製以下「同步密碼」並傳給同行者：', encodedKey);
+            });
+        }
+
+        function importData() {
+            const input = prompt('📥 請貼上她傳給你的「同步密碼」：\n\n(系統會自動合併最新行程)');
+            if (!input || input.trim() === "") return;
+            
+            // 1. Base64 解碼 -> 2. 字串轉 JSON
+            const decodedStr = atou(input.trim());
+            
+            if (!decodedStr) { alert('❌ 匯入失敗：這不是正確的同步密碼，或者代碼在複製過程中有遺漏。'); return; }
+
+            try {
+                const newData = JSON.parse(decodedStr);
+                if (Array.isArray(newData)) {
+                    // 執行智慧合併 (Merge)
+                    const mergedMap = new Map();
+                    schedule.forEach(item => mergedMap.set(item.id, item));
+                    newData.forEach(item => mergedMap.set(item.id, item));
+                    
+                    schedule = Array.from(mergedMap.values());
+                    saveAndRender();
+                    alert('💖 同步成功！你們的行程已經合併。快去課表看看有沒有 Race Conflict 吧！');
+                } else {
+                    alert('❌ 匯入失敗：密碼內容格式不對。');
+                }
+            } catch(e) {
+                alert('❌ 匯入失敗：密碼解析出錯，請重新複製一次。');
+            }
+        }
+        // ==========================================
+
+        document.getElementById('schedule-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            let evDate = document.getElementById('event-date').value || '';
+            let evStart = document.getElementById('start-time').value || '';
+            let evEnd = document.getElementById('end-time').value;
+            let evMode = document.getElementById('event-mode').value;
+            let evLoc = document.getElementById('event-location').value.trim();
+            let evTitle = document.getElementById('event-title').value || '';
+
+            // Smart Default 1: 結束時間空著 -> 同開始時間
+            if (!evEnd) evEnd = evStart;
+
+            // 尋找「時間軸上的前一個行程」以執行 Smart Default 2 & 3
+            let prevEvent = null;
+            let tempSchedule = schedule.filter(s => s.id !== editingId); // 排除自己
+            tempSchedule.push({ id: 'temp_find', date: evDate, startTime: evStart });
+            tempSchedule.sort((a, b) => {
+                const dateA = new Date(a.date || '1970-01-01').getTime();
+                const dateB = new Date(b.date || '1970-01-01').getTime();
+                if (dateA !== dateB) return dateA - dateB;
+                return (a.startTime || '').localeCompare(b.startTime || '');
+            });
+            let tempIndex = tempSchedule.findIndex(s => s.id === 'temp_find');
+            if (tempIndex > 0) { prevEvent = tempSchedule[tempIndex - 1]; }
+
+            // Smart Default 2: 交通空著 -> 繼承
+            if (!evMode) { evMode = prevEvent ? prevEvent.mode : 'driving'; }
+
+            // Smart Default 3: 地點空著 -> 繼承
+            if (!evLoc) { evLoc = prevEvent ? prevEvent.location : ''; }
+
+            const finalEventData = {
+                date: evDate, startTime: evStart, endTime: evEnd,
+                mode: evMode, location: evLoc, title: evTitle
+            };
+
+            if (editingId) {
+                const index = schedule.findIndex(s => s.id === editingId);
+                if (index !== -1) schedule[index] = { ...schedule[index], ...finalEventData };
+                cancelEdit(); 
+            } else {
+                finalEventData.id = Date.now();
+                schedule.push(finalEventData);
+                document.getElementById('schedule-form').reset();
+                document.getElementById('event-date').value = evDate; // 保留日期方便連續輸入
+            }
+            saveAndRender();
+        });
+
+        function editEvent(id) {
+            const ev = schedule.find(s => s.id === id);
+            if (!ev) return;
+            editingId = id;
+            document.getElementById('event-date').value = ev.date;
+            document.getElementById('start-time').value = ev.startTime;
+            document.getElementById('end-time').value = ev.endTime;
+            document.getElementById('event-mode').value = ev.mode || '';
+            document.getElementById('event-location').value = ev.location;
+            document.getElementById('event-title').value = ev.title;
+
+            document.getElementById('form-title-text').innerText = '正在修改旅程片段...';
+            const formContainer = document.getElementById('form-container');
+            formContainer.classList.add('editing-card'); // 讓表單也發亮
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerHTML = '💾 儲存修改';
+            submitBtn.className = 'flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition h-[46px] shadow-lg';
+            
+            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            renderAll(); 
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            document.getElementById('schedule-form').reset();
+            document.getElementById('form-title-text').innerText = '新增旅程片段';
+            const formContainer = document.getElementById('form-container');
+            formContainer.classList.remove('editing-card');
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerHTML = '➕ 新增';
+            submitBtn.className = 'flex-1 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition h-[46px] shadow-lg';
+            
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+            renderAll();
+        }
+
+        function deleteEvent(id) { 
+            if(confirm("確定要刪除這段回憶嗎？")) {
+                schedule = schedule.filter(event => event.id !== id); 
+                if (editingId === id) cancelEdit(); 
+                saveAndRender(); 
+            }
+        }
+
+        function saveAndRender() {
+            schedule.sort((a, b) => {
+                const dateA = new Date(a.date || '1970-01-01').getTime();
+                const dateB = new Date(b.date || '1970-01-01').getTime();
+                if (dateA !== dateB) return dateA - dateB;
+                return (a.startTime || '').localeCompare(b.startTime || '');
+            });
+            localStorage.setItem('italy_schedule', JSON.stringify(schedule));
+            renderAll();
+        }
+
+        function switchView(view) {
+            currentView = view;
+            ['daily', 'timetable', 'nav'].forEach(v => {
+                const btn = document.getElementById(`btn-${v}`);
+                const div = document.getElementById(`view-${v}`);
+                if (v === view) {
+                    if (v === 'nav') { btn.classList.add('bg-blue-100', 'text-blue-900'); btn.classList.remove('text-slate-500'); } 
+                    else { btn.classList.add('bg-emerald-100', 'text-emerald-900'); btn.classList.remove('text-slate-500');}
+                    div.classList.replace('hidden', 'block');
+                } else {
+                    btn.classList.remove('bg-emerald-100', 'text-emerald-900', 'bg-blue-100', 'text-blue-900');
+                    btn.classList.add('text-slate-500');
+                    div.classList.replace('block', 'hidden');
+                }
+            });
+            renderAll();
+        }
+
+        function selectDate(date) { selectedDate = date; renderAll(); }
+
+        function renderAll() {
+            const validSchedule = schedule.filter(s => s.date);
+            const uniqueDates = [...new Set(validSchedule.map(s => s.date))].sort();
+            if (!selectedDate && uniqueDates.length > 0) selectedDate = uniqueDates[0];
+
+            // 1. Daily View 渲染
+            const dateTabs = document.getElementById('date-tabs');
+            dateTabs.innerHTML = '';
+            uniqueDates.forEach(date => {
+                const isSelected = date === selectedDate;
+                const btnClass = isSelected ? 'px-5 py-2 bg-emerald-600 text-white rounded-full text-sm font-bold shadow-md' : 'px-5 py-2 bg-white border border-slate-300 text-slate-600 rounded-full text-sm hover:bg-slate-50 cursor-pointer transition';
+                dateTabs.innerHTML += `<button onclick="selectDate('${date}')" class="${btnClass}">${date}</button>`;
+            });
+            const dailyTimeline = document.getElementById('daily-timeline');
+            dailyTimeline.innerHTML = '';
+            validSchedule.filter(e => e.date === selectedDate).forEach(event => {
+                const endTimeStr = event.endTime && event.endTime !== event.startTime ? ` ~ ${event.endTime}` : '';
+                const isEditing = editingId === event.id ? 'editing-card' : '';
+                
+                dailyTimeline.innerHTML += `
+                    <div class="relative pl-7 pb-5 group">
+                        <div class="absolute left-[-6px] top-2 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow"></div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-start justify-between ${isEditing} transition-all hover:border-emerald-300">
+                            <div>
+                                <b class="text-emerald-800 text-lg">${event.startTime || '??:??'}${endTimeStr}</b> - <span class="text-slate-900 font-semibold">${event.title}</span><br>
+                                <span class="text-blue-600 text-sm font-medium">📍 ${event.location || '未設定'}</span>
+                            </div>
+                            <div class="mt-3 sm:mt-0 flex gap-2 shrink-0">
+                                <button onclick="editEvent(${event.id})" class="px-3.5 py-1.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg border border-blue-100 hover:bg-blue-100 transition">✏️ 修改</button>
+                                <button onclick="deleteEvent(${event.id})" class="px-3.5 py-1.5 bg-red-50 text-red-500 text-xs font-bold rounded-lg border border-red-100 hover:bg-red-100 transition">🗑️ 刪除</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            // 2. Timetable View 渲染
+            const head = document.getElementById('timetable-head');
+            const body = document.getElementById('timetable-body');
+            if (uniqueDates.length === 0) {
+                head.innerHTML = '<tr><th class="p-4">🧸 這裡空空的，快去新增第一筆旅程吧！</th></tr>'; body.innerHTML = '';
+            } else {
+                let headHTML = '<tr><th class="p-4 border-b border-r bg-slate-200 sticky left-0 z-30 sticky-col w-28 text-center font-bold text-slate-600">時間軸</th>';
+                uniqueDates.forEach(date => {
+                    const d = new Date(date);
+                    headHTML += `<th class="p-4 border-b text-center bg-slate-200 min-w-[220px] font-extrabold text-lg text-emerald-950">${d.getMonth()+1}/${d.getDate()}</th>`;
+                });
+                head.innerHTML = headHTML + '</tr>';
+                
+                let bodyHTML = '';
+                for (let hour = 6; hour <= 23; hour++) {
+                    const hourStr = hour.toString().padStart(2, '0');
+                    bodyHTML += `<tr class="border-b hover:bg-slate-100/50"><td class="p-3 border-r text-center sticky left-0 bg-slate-50/90 z-10 sticky-col font-bold text-slate-500 backdrop-blur-sm">${hourStr}:00</td>`;
+                    uniqueDates.forEach(date => {
+                        const events = validSchedule.filter(e => e.date === date && e.startTime && e.startTime.startsWith(hourStr));
+                        bodyHTML += `<td class="p-2 border-r align-top border-dashed border-slate-200">`;
+                        events.forEach(ev => {
+                            const endTimeStr = ev.endTime && ev.endTime !== ev.startTime ? `~${ev.endTime}` : '';
+                            const isEditing = editingId === ev.id ? 'editing-card' : '';
+                            
+                            bodyHTML += `<div class="bg-white border-l-4 border-emerald-500 p-3 text-xs rounded-xl shadow mb-2 relative group hover:shadow-md transition-all ${isEditing}">
+                                <b class="text-emerald-800 text-sm">${ev.startTime || ''}${endTimeStr}</b><br>
+                                <span class="font-bold text-slate-900 text-smleading-tight block my-1">${ev.title || '無標題'}</span>
+                                <span class="text-blue-600 truncate block font-medium">📍 ${ev.location}</span>
+                                <div class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition flex gap-1 bg-white/90 p-1 rounded-lg shadow-md backdrop-blur-sm border border-slate-100">
+                                    <button onclick="editEvent(${ev.id})" class="text-blue-500 hover:bg-blue-100 p-1 rounded-md">✏️</button>
+                                    <button onclick="deleteEvent(${ev.id})" class="text-red-500 hover:bg-red-100 p-1 rounded-md">✖</button>
+                                </div>
+                            </div>`;
+                        });
+                        bodyHTML += `</td>`;
+                    });
+                    bodyHTML += `</tr>`;
+                }
+                body.innerHTML = bodyHTML;
+            }
+
+            // 3. 更新 Nav View
+            const select = document.getElementById('nav-date-select');
+            select.innerHTML = uniqueDates.map(d => `<option value="${d}">${d}</option>`).join('');
+            generateNavLinks();
+        }
+
+        function generateNavLinks() {
+            const date = document.getElementById('nav-date-select').value;
+            const container = document.getElementById('nav-links-container');
+            if (!date) return;
+            const dayEvents = schedule.filter(e => e.date === date && e.location && e.location.trim() !== '');
+            if (dayEvents.length < 2) {
+                container.innerHTML = '<p class="text-slate-500 text-center py-6 font-medium">⚠️ 這天需要至少兩個「有地點」的行程才能產生路線喔！</p>'; return;
+            }
+            let html = '';
+            for (let i = 0; i < dayEvents.length - 1; i++) {
+                const current = dayEvents[i], next = dayEvents[i+1];
+                const origin = encodeURIComponent(current.location), destination = encodeURIComponent(next.location);
+                const mode = next.mode || 'driving'; 
+                
+                // 正確的 Google Maps 跨平台網址
+                const mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${mode}`;
+                const modeIcon = mode === 'transit' ? '🚂 大眾運輸' : (mode === 'walking' ? '🚶 步行' : '🚗 開車');
+                const endTimeDisplay = current.endTime ? current.endTime : (current.startTime || '??:??');
+
+                html += `
+                <div class="flex flex-col items-center">
+                    <div class="w-full bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-sm font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full inline-block mb-2">區間：${current.startTime || '??:??'} ~ ${endTimeDisplay}</p>
+                        <p class="text-lg font-black text-slate-950">${current.title}</p>
+                        <p class="text-blue-600 text-sm font-semibold mt-1">📍 ${current.location}</p>
+                    </div>
+                    <div class="my-2 flex flex-col items-center w-full relative">
+                        <div class="h-6 w-1 bg-emerald-200 rounded"></div>
+                        <div class="flex flex-col items-center bg-blue-50 py-3.5 px-6 rounded-2xl border-2 border-blue-100 w-[95%] md:w-[70%] shadow-md transform hover:scale-102 transition-transform">
+                            <p class="text-xs font-bold text-blue-900 mb-2.5 flex items-center gap-1.5">🕒 於 ${endTimeDisplay} 逛完出發</p>
+                            <a href="${mapUrl}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-bold shadow-lg transition transform hover:scale-105 active:scale-95 w-full justify-center text-sm">
+                                ${modeIcon} 導航至：${next.title}
+                            </a>
+                        </div>
+                        <div class="h-6 w-1 bg-emerald-200 rounded"></div>
+                    </div>
+                </div>`;
+            }
+            const last = dayEvents[dayEvents.length - 1];
+            html += `
+            <div class="flex flex-col items-center">
+                <div class="w-full bg-emerald-50 p-4 rounded-xl shadow-inner border border-emerald-200">
+                    <p class="text-sm font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full inline-block mb-2">抵達區間：${last.startTime || '??:??'}${last.endTime && last.endTime !== last.startTime ? ` ~ ${last.endTime}` : ''}</p>
+                    <p class="text-lg font-black text-emerald-950">${last.title}</p>
+                    <p class="text-blue-600 text-sm font-semibold mt-1">📍 ${last.location}</p>
+                </div>
+            </div>`;
+            container.innerHTML = html;
+        }
+
+        renderAll();
+    </script>
 </body>
 </html>
