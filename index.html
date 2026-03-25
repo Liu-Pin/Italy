@@ -12,188 +12,180 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            /* 🌸 背景已換成 Q 版動漫風義大利 🌸 */
             background-image: url('https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            /* 防止像網頁一樣長按反白，增加 App 沉浸感 */
+            background-size: cover; background-position: center; background-attachment: fixed;
             -webkit-user-select: none; user-select: none;
         }
-        /* 讓輸入框可以正常打字 */
-        input, select { -webkit-user-select: auto; user-select: auto; border-radius: 12px !important; }
         
-        /* 讓介面更圓潤可愛的 Glassmorphism */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.96);
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border-radius: 24px; 
+        }
+        
+        .glass-card { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.6); }
+        
+        input, select { 
+            -webkit-user-select: auto; user-select: auto; 
+            border-radius: 12px !important; 
+            background-color: rgba(255, 255, 255, 0.65) !important;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            border-radius: 24px; /* 超圓潤邊角 */
         }
         
-        /* 美化捲動軸，手機端隱藏捲動軸 */
         ::-webkit-scrollbar { display: none; }
+        .sticky-col { box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1); }
+        .sticky-head { box-shadow: 0 2px 5px -2px rgba(0,0,0,0.1); }
         
-        .sticky-col { box-shadow: 3px 0 6px -2px rgba(0,0,0,0.05); }
-        .sticky-head { box-shadow: 0 3px 6px -2px rgba(0,0,0,0.05); }
+        .editing-card { border: 2px solid #60a5fa !important; background-color: #eff6ff !important; box-shadow: 0 0 15px rgba(96, 165, 250, 0.5) !important; transform: scale(1.02); z-index: 10; }
         
-        /* 編輯中卡片的可愛發亮效果 */
-        .editing-card { 
-            border: 3px solid #60a5fa !important; 
-            background-color: #eff6ff !important; 
-            box-shadow: 0 0 20px rgba(96, 165, 250, 0.6) !important;
-            transform: scale(1.02);
-        }
+        #form-wrapper { transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out; overflow: hidden; }
+        .form-collapsed { max-height: 0; opacity: 0; margin-top: 0; }
+        .form-expanded { max-height: 800px; opacity: 1; margin-top: 1rem; }
     </style>
 </head>
 <body class="p-3 md:p-6 min-h-screen text-slate-800 antialiased font-sans pb-24">
 
     <script>
-        // 💣 錯誤處理器 (防止舊資料當機)
         window.onerror = function() {
-            document.body.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:rgba(0,0,0,0.85); color:white; position:fixed; top:0; left:0; width:100%; z-index:9999; text-align:center; padding:20px;">
-                <h1 style="font-size:3rem; color:#ff4d4f; margin-bottom:1rem;">⚠️ 資料同步發生衝突</h1>
-                <p style="font-size:1.2rem; margin-bottom:2rem;">別擔心！這通常是因為瀏覽器殘留了不同版本的行程資料。</p>
-                <button onclick="localStorage.removeItem('italy_schedule'); location.reload();" style="padding:18px 36px; font-size:1.5rem; background:#ff4d4f; color:white; border:none; border-radius:15px; cursor:pointer; font-weight:bold; box-shadow:0 5px 20px rgba(255,77,79,0.5);">
-                    🗑️ 點此「重置」以修復網頁
-                </button>
-            </div>`;
+            document.body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:rgba(0,0,0,0.85); color:white; position:fixed; top:0; left:0; width:100%; z-index:9999; text-align:center; padding:20px;"><h1 style="font-size:3rem; color:#ff4d4f; margin-bottom:1rem;">⚠️ 同步衝突</h1><button onclick="localStorage.removeItem('italy_schedule'); location.reload();" style="padding:15px 30px; font-size:1.5rem; background:#ff4d4f; color:white; border-radius:15px; font-weight:bold;">🗑️ 點此修復網頁</button></div>`;
             return false;
         };
     </script>
 
-    <header class="mb-6 text-center text-white drop-shadow-lg relative p-4 bg-black/10 rounded-3xl backdrop-blur-sm border border-white/20 mt-2">
-        <h1 class="text-3xl md:text-4xl font-black tracking-tight mb-4 flex items-center justify-center gap-3">
-             <span style="color:#d9f99d"></span>品成 & 尹瑄 Italy Adventure❤️
-        </h1>
-        
-        <div class="inline-flex flex-wrap justify-center gap-3 bg-white/90 p-3 rounded-2xl shadow-inner border border-white">
-            <button onclick="exportData()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl transition shadow-md flex items-center gap-2 transform hover:scale-105 active:scale-95">
-                📤 1. 複製「同步密碼」
-            </button>
-            <button onclick="importData()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition shadow-md flex items-center gap-2 transform hover:scale-105 active:scale-95">
-                📥 2. 貼上「同步密碼」合併
-            </button>
+    <header class="mb-5 text-center text-white drop-shadow-lg relative p-4 bg-black/20 rounded-3xl backdrop-blur-md border border-white/20 mt-1">
+        <h1 class="text-3xl font-black tracking-tight mb-4 flex items-center justify-center gap-2"> 品成 & 尹瑄 Italy Adventure❤️</h1>
+        <div class="inline-flex flex-wrap justify-center gap-3 bg-white/40 p-2.5 rounded-2xl shadow-inner border border-white/50 backdrop-blur-md">
+            <button onclick="exportData()" class="px-4 py-2 bg-slate-800/90 hover:bg-slate-900 text-white text-sm font-bold rounded-xl transition shadow active:scale-95">📤 1. 複製密碼</button>
+            <button onclick="importData()" class="px-4 py-2 bg-blue-600/90 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition shadow active:scale-95">📥 2. 貼上合併</button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto space-y-6">
+    <main class="max-w-7xl mx-auto space-y-5">
         
-        <div class="glass-panel p-6 transition-all duration-300 border-2 border-white" id="form-container">
-            <h2 class="text-xl font-bold text-emerald-900 mb-5 flex items-center gap-2" id="form-title">
-                ✏️ <span id="form-title-text">新增旅程片段</span>
+        <div class="glass-panel p-4 transition-all duration-300" id="form-container">
+            <h2 class="text-base font-bold text-emerald-900 flex justify-between items-center cursor-pointer active:scale-[0.98] transition-transform" onclick="toggleForm()">
+                <div class="flex items-center gap-2">✏️ <span id="form-title-text">新增旅程片段</span></div>
+                <div id="toggle-icon" class="text-xs bg-white/60 px-3 py-1.5 rounded-full shadow-sm text-emerald-800 font-bold backdrop-blur-sm">🔼 點此收合</div>
             </h2>
-            <form id="schedule-form" class="flex flex-wrap gap-4 items-end">
-                <div class="flex-1 min-w-[130px]">
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">日期 <span class="text-red-500">*</span></label>
-                    <input type="date" id="event-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm" required>
-                </div>
-                <div class="flex-1 min-w-[100px]">
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">開始時間 <span class="text-red-500">*</span></label>
-                    <input type="time" id="start-time" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm" required>
-                </div>
-                <div class="flex-1 min-w-[100px]">
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">結束時間 <span class="text-[10px] font-medium text-emerald-700">(留白同上)</span></label>
-                    <input type="time" id="end-time" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm">
-                </div>
-                <div class="flex-1 min-w-[130px]">
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">下一站交通</label>
-                    <select id="event-mode" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 shadow-sm text-sm">
-                        <option value="">🔄 自動繼承上一站</option>
-                        <option value="driving">🚗 開車</option>
-                        <option value="transit">🚂 大眾運輸</option>
-                        <option value="walking">🚶 步行</option>
-                    </select>
-                </div>
-                <div class="flex-[1.5] min-w-[160px]">
-                    <label class="block text-xs font-bold text-blue-700 mb-1.5 pl-1">📍 實際地點</label>
-                    <input type="text" id="event-location" placeholder="留白則自動繼承上一站..." class="w-full px-4 py-2.5 rounded-xl border border-blue-200 focus:ring-2 focus:ring-blue-400 bg-blue-50 text-sm shadow-inner">
-                </div>
-                <div class="flex-[1.5] min-w-[160px]">
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5 pl-1">行程內容 <span class="text-red-500">*</span></label>
-                    <input type="text" id="event-title" placeholder="例如：參觀競技場/吃冰淇淋" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 text-sm shadow-sm" required>
-                </div>
-                
-                <div class="flex gap-2 min-w-[180px]">
-                    <button type="submit" id="submit-btn" class="flex-1 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition h-[46px] shadow-lg transform hover:scale-105 active:scale-95">
-                        ➕ 新增
-                    </button>
-                    <button type="button" id="cancel-edit-btn" onclick="cancelEdit()" class="hidden px-5 py-2.5 bg-slate-400 hover:bg-slate-500 text-white font-bold rounded-xl transition h-[46px] shadow-md active:scale-95">
-                        取消
-                    </button>
-                </div>
-            </form>
+            
+            <div id="form-wrapper" class="form-expanded">
+                <form id="schedule-form" class="flex flex-wrap gap-3 items-end">
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="block text-[11px] font-bold text-slate-800 mb-1 pl-1">日期 *</label>
+                        <input type="date" id="event-date" class="w-full px-3 py-2 border border-white/50 focus:ring-2 focus:ring-emerald-400 text-sm" required>
+                    </div>
+                    <div class="flex-1 min-w-[90px]">
+                        <label class="block text-[11px] font-bold text-slate-800 mb-1 pl-1">開始 *</label>
+                        <input type="time" id="start-time" class="w-full px-3 py-2 border border-white/50 focus:ring-2 focus:ring-emerald-400 text-sm" required>
+                    </div>
+                    <div class="flex-1 min-w-[90px]">
+                        <label class="block text-[11px] font-bold text-emerald-800 mb-1 pl-1">結束(可留白)</label>
+                        <input type="time" id="end-time" class="w-full px-3 py-2 border border-white/50 focus:ring-2 focus:ring-emerald-400 text-sm">
+                    </div>
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="block text-[11px] font-bold text-slate-800 mb-1 pl-1">下一站交通</label>
+                        <select id="event-mode" class="w-full px-3 py-2 border border-white/50 focus:ring-2 focus:ring-emerald-400 text-xs font-medium">
+                            <option value="">🔄 自動繼承</option>
+                            <option value="driving">🚗 開車</option>
+                            <option value="transit">🚂 大眾運輸</option>
+                            <option value="walking">🚶 步行</option>
+                        </select>
+                    </div>
+                    <div class="flex-[1.5] min-w-[150px]">
+                        <label class="block text-[11px] font-bold text-blue-900 mb-1 pl-1">📍 地點 (留白自動繼承)</label>
+                        <input type="text" id="event-location" class="w-full px-3 py-2 border border-blue-300/50 focus:ring-2 focus:ring-blue-400 text-sm" style="background-color: rgba(239, 246, 255, 0.7) !important;">
+                    </div>
+                    <div class="flex-[1.5] min-w-[150px]">
+                        <label class="block text-[11px] font-bold text-slate-800 mb-1 pl-1">行程內容 *</label>
+                        <input type="text" id="event-title" placeholder="如: 參觀大教堂" class="w-full px-3 py-2 border border-white/50 focus:ring-2 focus:ring-emerald-400 text-sm" required>
+                    </div>
+                    
+                    <div class="flex gap-2 min-w-[160px] w-full mt-1">
+                        <button type="submit" id="submit-btn" class="flex-1 px-4 py-2.5 bg-emerald-600/90 hover:bg-emerald-700 text-white font-bold rounded-xl active:scale-95 shadow-md text-sm border border-emerald-400">➕ 新增行程</button>
+                        <button type="button" id="cancel-edit-btn" onclick="cancelEdit()" class="hidden px-4 py-2.5 bg-slate-500/90 text-white font-bold rounded-xl active:scale-95 shadow-md text-sm">取消</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div class="glass-panel p-5 md:p-7 min-h-[40vh]">
+        <div class="glass-panel p-4 md:p-6 min-h-[50vh]">
             <div id="view-daily" style="display: none;">
-                <div id="date-tabs" class="flex overflow-x-auto gap-2.5 mb-6 border-b border-slate-200 pb-5"></div>
-                <div id="daily-timeline" class="space-y-5 pl-2 border-l-4 border-emerald-200 min-h-[200px]"></div>
+                <div id="date-tabs" class="flex overflow-x-auto gap-2 mb-5 border-b border-white/40 pb-4"></div>
+                <div id="daily-timeline" class="space-y-4 pl-1 border-l-[3px] border-emerald-300/50 min-h-[300px]"></div>
             </div>
 
             <div id="view-timetable" style="display: block;">
-                <div class="overflow-x-auto border border-slate-300 rounded-2xl bg-slate-50/50">
-                    <table class="w-full text-left border-collapse min-w-[900px]">
-                        <thead id="timetable-head" class="bg-slate-200/90 text-slate-800 text-sm sticky top-0 z-20 sticky-head backdrop-blur-sm"></thead>
-                        <tbody id="timetable-body" class="bg-white/80 text-sm"></tbody>
+                <div class="overflow-x-auto rounded-xl bg-white/40 border border-white/50 backdrop-blur-sm shadow-inner">
+                    <table class="w-full text-left border-collapse">
+                        <thead id="timetable-head" class="bg-white/70 text-slate-900 text-sm sticky top-0 z-20 sticky-head backdrop-blur-md border-b border-white/60"></thead>
+                        <tbody id="timetable-body" class="text-sm"></tbody>
                     </table>
                 </div>
             </div>
 
             <div id="view-nav" style="display: none;">
-                <div class="flex flex-col gap-4 mb-4">
-                    <div class="w-full">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">選擇要出發的日期：</label>
-                        <select id="nav-date-select" onchange="generateNavLinks()" class="w-full px-5 py-3 rounded-xl border border-blue-300 shadow-sm font-bold text-blue-900 bg-blue-50"></select>
-                    </div>
-                    <div id="nav-links-container" class="mt-4 p-5 bg-slate-100/80 border border-slate-200 rounded-2xl space-y-3 shadow-inner"></div>
+                <div class="flex flex-col gap-3">
+                    <label class="block text-xs font-bold text-slate-800 drop-shadow-sm">選擇出發日期：</label>
+                    <select id="nav-date-select" onchange="generateNavLinks()" class="w-full px-4 py-3 rounded-xl border border-blue-300 shadow-sm font-bold text-blue-900 text-sm"></select>
+                    <div id="nav-links-container" class="mt-2 p-4 bg-white/40 border border-white/50 rounded-2xl space-y-3 shadow-inner backdrop-blur-md"></div>
                 </div>
             </div>
         </div>
         
-        <div class="text-center mt-6 pb-2">
-            <button onclick="if(confirm('確定清除所有資料重來？')) { localStorage.removeItem('italy_schedule'); location.reload(); }" class="text-xs text-slate-500 hover:text-red-500 underline py-2 px-4 transition-all">⚠️ 重置所有行程資料 (Reset)</button>
+        <div class="text-center mt-6 pb-6">
+            <button onclick="if(confirm('確定清除所有資料重來？')) { localStorage.removeItem('italy_schedule'); location.reload(); }" class="text-[10px] text-white/70 hover:text-red-400 font-bold underline drop-shadow-md">⚠️ 重置所有資料</button>
         </div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-lg border-t border-slate-200 shadow-[0_-5px_20px_rgba(0,0,0,0.08)] z-50 pb-[env(safe-area-inset-bottom)]">
-        <div class="flex justify-around items-center h-16 max-w-lg mx-auto px-2">
-            <button onclick="switchView('daily')" id="nav-daily" class="flex flex-col items-center justify-center w-full h-full text-slate-400 transition-all active:scale-90">
-                <span class="text-2xl mb-0.5">📅</span>
-                <span class="text-[10px] font-medium">單日詳情</span>
+    <nav class="fixed bottom-0 left-0 w-full bg-white/85 backdrop-blur-xl border-t border-white/50 shadow-[0_-5px_20px_rgba(0,0,0,0.1)] z-50 pb-[env(safe-area-inset-bottom)]">
+        <div class="flex justify-around items-center h-14 max-w-lg mx-auto px-1">
+            <button onclick="switchView('daily')" id="nav-daily" class="flex flex-col items-center justify-center w-full h-full text-slate-500 active:scale-90 transition-transform">
+                <span class="text-[22px] drop-shadow-sm mb-0.5">📅</span><span class="text-[10px] font-bold">單日詳情</span>
             </button>
-            <button onclick="switchView('timetable')" id="nav-timetable" class="flex flex-col items-center justify-center w-full h-full text-emerald-600 scale-110 font-bold transition-all active:scale-90">
-                <span class="text-2xl mb-0.5">🗓️</span>
-                <span class="text-[10px]">課表模式</span>
+            <button onclick="switchView('timetable')" id="nav-timetable" class="flex flex-col items-center justify-center w-full h-full text-emerald-700 scale-110 font-black active:scale-90 transition-transform">
+                <span class="text-[22px] drop-shadow-sm mb-0.5">🗓️</span><span class="text-[10px]">緊湊課表</span>
             </button>
-            <button onclick="switchView('nav')" id="nav-nav" class="flex flex-col items-center justify-center w-full h-full text-slate-400 transition-all active:scale-90">
-                <span class="text-2xl mb-0.5">🧭</span>
-                <span class="text-[10px] font-medium">智慧導航</span>
+            <button onclick="switchView('nav')" id="nav-nav" class="flex flex-col items-center justify-center w-full h-full text-slate-500 active:scale-90 transition-transform">
+                <span class="text-[22px] drop-shadow-sm mb-0.5">🧭</span><span class="text-[10px] font-bold">智慧導航</span>
             </button>
         </div>
     </nav>
 
     <script>
+        // 🌟 星期幾對應表 (全域變數)
+        const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
         let schedule = [];
         try { schedule = JSON.parse(localStorage.getItem('italy_schedule')) || []; } catch(e) { schedule = []; }
         let currentView = 'timetable';
         let selectedDate = '';
         let editingId = null;
 
-        // Base64 同步
-        function utoa(str) { return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) { return String.fromCharCode('0x' + p1); })); }
+        function toggleForm() {
+            const wrapper = document.getElementById('form-wrapper');
+            const icon = document.getElementById('toggle-icon');
+            if (wrapper.classList.contains('form-expanded')) {
+                wrapper.classList.remove('form-expanded'); wrapper.classList.add('form-collapsed');
+                icon.innerHTML = '🔽 點此展開';
+            } else {
+                wrapper.classList.remove('form-collapsed'); wrapper.classList.add('form-expanded');
+                icon.innerHTML = '🔼 點此收合';
+            }
+        }
+
+        function utoa(str) { return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(m, p1) { return String.fromCharCode('0x' + p1); })); }
         function atou(str) { try { return decodeURIComponent(atob(str).split('').map(function(c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')); } catch(e) { return null; } }
 
         function exportData() {
-            if (schedule.length === 0) { alert('🧩 先加點行程再匯出吧！'); return; }
+            if (schedule.length === 0) { alert('先加點行程吧！'); return; }
             const encodedKey = utoa(JSON.stringify(schedule));
-            navigator.clipboard.writeText(encodedKey).then(() => { alert('🎉 成功！「同步密碼」已複製。\n\n請直接貼給同行者！'); }).catch(err => { prompt('請複製密碼：', encodedKey); });
+            navigator.clipboard.writeText(encodedKey).then(() => { alert('🎉 同步密碼已複製！'); }).catch(err => { prompt('請複製：', encodedKey); });
         }
 
         function importData() {
-            const input = prompt('📥 貼上「同步密碼」合併：');
+            const input = prompt('📥 貼上同步密碼：');
             if (!input || input.trim() === "") return;
             const decodedStr = atou(input.trim());
             if (!decodedStr) { alert('❌ 密碼錯誤'); return; }
@@ -204,15 +196,13 @@
                     schedule.forEach(item => mergedMap.set(item.id, item));
                     newData.forEach(item => mergedMap.set(item.id, item));
                     schedule = Array.from(mergedMap.values());
-                    saveAndRender();
-                    alert('💖 同步成功！');
+                    saveAndRender(); alert('💖 同步成功！');
                 }
             } catch(e) { alert('❌ 密碼解析出錯'); }
         }
 
         document.getElementById('schedule-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            
             let evDate = document.getElementById('event-date').value || '';
             let evStart = document.getElementById('start-time').value || '';
             let evEnd = document.getElementById('end-time').value;
@@ -226,16 +216,15 @@
             let tempSchedule = schedule.filter(s => s.id !== editingId); 
             tempSchedule.push({ id: 'temp_find', date: evDate, startTime: evStart });
             tempSchedule.sort((a, b) => {
-                const dateA = new Date(a.date || '1970-01-01').getTime();
-                const dateB = new Date(b.date || '1970-01-01').getTime();
+                const dateA = new Date(a.date || '1970-01-01').getTime(), dateB = new Date(b.date || '1970-01-01').getTime();
                 if (dateA !== dateB) return dateA - dateB;
                 return (a.startTime || '').localeCompare(b.startTime || '');
             });
             let tempIndex = tempSchedule.findIndex(s => s.id === 'temp_find');
             if (tempIndex > 0) { prevEvent = tempSchedule[tempIndex - 1]; }
 
-            if (!evMode) { evMode = prevEvent ? prevEvent.mode : 'driving'; }
-            if (!evLoc) { evLoc = prevEvent ? prevEvent.location : ''; }
+            if (!evMode) evMode = prevEvent ? prevEvent.mode : 'driving';
+            if (!evLoc) evLoc = prevEvent ? prevEvent.location : '';
 
             const finalEventData = { date: evDate, startTime: evStart, endTime: evEnd, mode: evMode, location: evLoc, title: evTitle };
 
@@ -244,8 +233,7 @@
                 if (index !== -1) schedule[index] = { ...schedule[index], ...finalEventData };
                 cancelEdit(); 
             } else {
-                finalEventData.id = Date.now();
-                schedule.push(finalEventData);
+                finalEventData.id = Date.now(); schedule.push(finalEventData);
                 document.getElementById('schedule-form').reset();
                 document.getElementById('event-date').value = evDate; 
             }
@@ -263,13 +251,15 @@
             document.getElementById('event-location').value = ev.location;
             document.getElementById('event-title').value = ev.title;
 
-            document.getElementById('form-title-text').innerText = '正在修改旅程片段...';
-            const formContainer = document.getElementById('form-container');
-            formContainer.classList.add('editing-card');
+            const wrapper = document.getElementById('form-wrapper');
+            if (wrapper.classList.contains('form-collapsed')) toggleForm();
+
+            document.getElementById('form-title-text').innerText = '修改行程';
+            document.getElementById('form-container').classList.add('editing-card');
             
             const submitBtn = document.getElementById('submit-btn');
-            submitBtn.innerHTML = '💾 儲存修改';
-            submitBtn.className = 'flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition h-[46px] shadow-lg active:scale-95';
+            submitBtn.innerHTML = '💾 儲存';
+            submitBtn.className = 'flex-1 px-4 py-2.5 bg-blue-600/90 hover:bg-blue-700 text-white font-bold rounded-xl active:scale-95 text-sm border border-blue-400';
             
             document.getElementById('cancel-edit-btn').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -280,20 +270,19 @@
             editingId = null;
             document.getElementById('schedule-form').reset();
             document.getElementById('form-title-text').innerText = '新增旅程片段';
-            const formContainer = document.getElementById('form-container');
-            formContainer.classList.remove('editing-card');
+            document.getElementById('form-container').classList.remove('editing-card');
             
             const submitBtn = document.getElementById('submit-btn');
-            submitBtn.innerHTML = '➕ 新增';
-            submitBtn.className = 'flex-1 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition h-[46px] shadow-lg active:scale-95';
+            submitBtn.innerHTML = '➕ 新增行程';
+            submitBtn.className = 'flex-1 px-4 py-2.5 bg-emerald-600/90 hover:bg-emerald-700 text-white font-bold rounded-xl active:scale-95 text-sm border border-emerald-400';
             
             document.getElementById('cancel-edit-btn').classList.add('hidden');
             renderAll();
         }
 
         function deleteEvent(id) { 
-            if(confirm("確定要刪除這段回憶嗎？")) {
-                schedule = schedule.filter(event => event.id !== id); 
+            if(confirm("確定刪除嗎？")) {
+                schedule = schedule.filter(e => e.id !== id); 
                 if (editingId === id) cancelEdit(); 
                 saveAndRender(); 
             }
@@ -301,8 +290,7 @@
 
         function saveAndRender() {
             schedule.sort((a, b) => {
-                const dateA = new Date(a.date || '1970-01-01').getTime();
-                const dateB = new Date(b.date || '1970-01-01').getTime();
+                const dateA = new Date(a.date || '1970-01-01').getTime(), dateB = new Date(b.date || '1970-01-01').getTime();
                 if (dateA !== dateB) return dateA - dateB;
                 return (a.startTime || '').localeCompare(b.startTime || '');
             });
@@ -310,23 +298,16 @@
             renderAll();
         }
 
-        // 🌟 強制覆寫 display，確保按鈕切換一定成功！同時切換底部 Icon 顏色
         function switchView(view) {
             currentView = view;
             ['daily', 'timetable', 'nav'].forEach(v => {
                 const navBtn = document.getElementById(`nav-${v}`);
                 const div = document.getElementById(`view-${v}`);
                 if (v === view) {
-                    if (navBtn) {
-                        navBtn.classList.add('text-emerald-600', 'scale-110', 'font-bold');
-                        navBtn.classList.remove('text-slate-400');
-                    }
+                    if (navBtn) { navBtn.classList.add('text-emerald-700', 'scale-110', 'font-black'); navBtn.classList.remove('text-slate-500', 'font-bold'); }
                     if (div) div.style.display = 'block';
                 } else {
-                    if (navBtn) {
-                        navBtn.classList.remove('text-emerald-600', 'scale-110', 'font-bold');
-                        navBtn.classList.add('text-slate-400');
-                    }
+                    if (navBtn) { navBtn.classList.remove('text-emerald-700', 'scale-110', 'font-black'); navBtn.classList.add('text-slate-500', 'font-bold'); }
                     if (div) div.style.display = 'none';
                 }
             });
@@ -335,81 +316,79 @@
 
         function selectDate(date) { selectedDate = date; renderAll(); }
 
-       function renderAll() {
+        function renderAll() {
             const validSchedule = schedule.filter(s => s.date);
             const uniqueDates = [...new Set(validSchedule.map(s => s.date))].sort();
             if (!selectedDate && uniqueDates.length > 0) selectedDate = uniqueDates[0];
 
-            // 🌟 新增：星期幾的對應陣列 (0是週日，6是週六)
-            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-
-            // 1. Daily View
+            // 1. Daily View (含星期幾)
             const dateTabs = document.getElementById('date-tabs');
             dateTabs.innerHTML = '';
             uniqueDates.forEach(date => {
                 const isSelected = date === selectedDate;
-                const btnClass = isSelected ? 'px-5 py-2.5 bg-emerald-600/90 text-white rounded-full text-sm font-bold shadow-md whitespace-nowrap border border-emerald-400 backdrop-blur-sm' : 'px-5 py-2.5 bg-white/60 border border-white/80 text-slate-800 rounded-full text-sm hover:bg-white/80 active:bg-white transition whitespace-nowrap font-semibold backdrop-blur-sm';
-                
-                // 單日詳情的 Tab 也順便加上星期幾，切換更直覺！
                 const d = new Date(date);
                 const dayName = weekdays[d.getDay()];
+                const btnClass = isSelected ? 'px-4 py-2 bg-emerald-600/90 text-white rounded-full text-[11px] font-bold shadow-md whitespace-nowrap border border-emerald-400 backdrop-blur-sm' : 'px-4 py-2 bg-white/60 border border-white/80 text-slate-800 rounded-full text-[11px] font-semibold hover:bg-white/80 transition whitespace-nowrap backdrop-blur-sm';
                 dateTabs.innerHTML += `<button onclick="selectDate('${date}')" class="${btnClass}">${d.getMonth()+1}/${d.getDate()} (${dayName})</button>`;
             });
             const dailyTimeline = document.getElementById('daily-timeline');
             dailyTimeline.innerHTML = '';
             validSchedule.filter(e => e.date === selectedDate).forEach(event => {
-                const endTimeStr = event.endTime && event.endTime !== event.startTime ? ` ~ ${event.endTime}` : '';
+                const endTimeStr = event.endTime && event.endTime !== event.startTime ? `~${event.endTime}` : '';
                 const isEditing = editingId === event.id ? 'editing-card' : '';
                 
                 dailyTimeline.innerHTML += `
-                    <div class="relative pl-7 pb-5 group">
-                        <div class="absolute left-[-7px] top-3 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-white shadow-md"></div>
-                        <div class="glass-card p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-start justify-between ${isEditing} transition-all active:scale-[0.98]">
+                    <div class="relative pl-5 pb-4 group">
+                        <div class="absolute left-[-5.5px] top-2.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white shadow-sm"></div>
+                        <div class="glass-card p-3 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-start justify-between ${isEditing} active:scale-[0.99] transition-transform">
                             <div>
-                                <b class="text-emerald-900 text-lg drop-shadow-sm">${event.startTime || '??:??'}${endTimeStr}</b> - <span class="text-slate-900 font-bold text-lg">${event.title}</span><br>
-                                <span class="text-blue-700 text-sm font-bold mt-1 inline-block bg-blue-50/50 px-2 py-0.5 rounded-md border border-blue-100/50">📍 ${event.location || '未設定'}</span>
+                                <b class="text-emerald-900 text-[13px] drop-shadow-sm">${event.startTime || '??:??'}${endTimeStr}</b>
+                                <span class="text-slate-900 font-bold text-[14px] ml-1">${event.title}</span><br>
+                                <span class="text-blue-700 text-[11px] font-bold mt-1 inline-block bg-blue-50/50 px-1.5 py-0.5 rounded border border-blue-100/50">📍 ${event.location || '未設定'}</span>
                             </div>
-                            <div class="mt-3 sm:mt-0 flex gap-2 shrink-0">
-                                <button onclick="editEvent(${event.id})" class="px-4 py-2 bg-blue-100/80 text-blue-700 text-xs font-bold rounded-xl border border-blue-200 active:bg-blue-200 transition shadow-sm">✏️ 修改</button>
-                                <button onclick="deleteEvent(${event.id})" class="px-4 py-2 bg-red-100/80 text-red-600 text-xs font-bold rounded-xl border border-red-200 active:bg-red-200 transition shadow-sm">🗑️ 刪除</button>
+                            <div class="mt-2 sm:mt-0 flex gap-1.5 shrink-0">
+                                <button onclick="editEvent(${event.id})" class="px-2.5 py-1.5 bg-blue-100/80 text-blue-700 text-[10px] font-bold rounded-lg border border-blue-200 active:bg-blue-200">✏️ 修改</button>
+                                <button onclick="deleteEvent(${event.id})" class="px-2.5 py-1.5 bg-red-100/80 text-red-600 text-[10px] font-bold rounded-lg border border-red-200 active:bg-red-200">🗑️ 刪除</button>
                             </div>
                         </div>
                     </div>`;
             });
 
-            // 2. Timetable View
+            // 2. 🌟 終極緊湊版 Timetable (含星期幾 + 移除多餘寬度)
             const head = document.getElementById('timetable-head');
             const body = document.getElementById('timetable-body');
             if (uniqueDates.length === 0) {
-                head.innerHTML = '<tr><th class="p-6 text-center text-slate-700 font-bold text-lg">🧸 這裡空空的，快點擊上方「新增旅程片段」吧！</th></tr>'; body.innerHTML = '';
+                head.innerHTML = '<tr><th class="p-4 text-center text-slate-700 font-bold text-sm">🧸 空空的，請新增行程！</th></tr>'; body.innerHTML = '';
             } else {
-                let headHTML = '<tr><th class="p-3 border-b border-white/40 border-r bg-white/40 sticky left-0 z-30 sticky-col w-20 text-center font-bold text-slate-700 backdrop-blur-md">時間</th>';
+                // 最左邊的時間軸極度縮小 (w-12)
+                let headHTML = '<tr><th class="p-1 border-b border-white/40 border-r bg-white/60 sticky left-0 z-30 sticky-col w-12 text-center font-bold text-slate-700 backdrop-blur-md text-[10px]">時間</th>';
                 uniqueDates.forEach(date => {
                     const d = new Date(date);
-                    const dayName = weekdays[d.getDay()]; // 🌟 取得星期幾
-                    // 🌟 將 (星期X) 加入到表頭中
-                    headHTML += `<th class="p-3 border-b border-white/40 text-center min-w-[200px] font-black text-xl text-emerald-900 drop-shadow-sm">${d.getMonth()+1}/${d.getDate()} <span class="text-base text-emerald-700">(${dayName})</span></th>`;
+                    const dayName = weekdays[d.getDay()];
+                    // 每一天的欄位寬度取消死板限制，利用 min-w-[110px] 讓內容自然撐開
+                    headHTML += `<th class="p-1.5 border-b border-white/40 text-center min-w-[110px] font-black text-[13px] text-emerald-900 drop-shadow-sm">${d.getMonth()+1}/${d.getDate()} <span class="text-[10px] text-emerald-700">(${dayName})</span></th>`;
                 });
                 head.innerHTML = headHTML + '</tr>';
                 
                 let bodyHTML = '';
                 for (let hour = 6; hour <= 23; hour++) {
                     const hourStr = hour.toString().padStart(2, '0');
-                    bodyHTML += `<tr class="border-b border-white/30"><td class="p-2 border-r border-white/40 text-center sticky left-0 bg-white/50 z-10 sticky-col font-black text-slate-600 backdrop-blur-md text-sm">${hourStr}:00</td>`;
+                    bodyHTML += `<tr class="border-b border-white/30"><td class="p-1 border-r border-white/40 text-center sticky left-0 bg-white/60 z-10 sticky-col font-bold text-slate-600 backdrop-blur-md text-[10px]">${hourStr}:00</td>`;
                     uniqueDates.forEach(date => {
                         const events = validSchedule.filter(e => e.date === date && e.startTime && e.startTime.startsWith(hourStr));
-                        bodyHTML += `<td class="p-2 border-r border-white/30 align-top">`;
+                        bodyHTML += `<td class="p-1 border-r border-white/30 align-top">`;
                         events.forEach(ev => {
                             const endTimeStr = ev.endTime && ev.endTime !== ev.startTime ? `~${ev.endTime}` : '';
                             const isEditing = editingId === ev.id ? 'editing-card' : '';
                             
-                            bodyHTML += `<div class="glass-card border-l-4 border-l-emerald-500 p-3 text-xs rounded-xl shadow-sm mb-2 relative group active:scale-[0.98] transition-all ${isEditing}">
-                                <b class="text-emerald-900 text-sm drop-shadow-sm">${ev.startTime || ''}${endTimeStr}</b><br>
-                                <span class="font-bold text-slate-900 text-[15px] leading-tight block my-1">${ev.title || '無標題'}</span>
-                                <span class="text-blue-800 font-bold block truncate bg-blue-50/50 inline-block px-1.5 py-0.5 rounded border border-blue-100/50 mt-1">📍 ${ev.location}</span>
-                                <div class="absolute top-1 right-1 flex gap-1 bg-white/90 p-1 rounded-lg shadow-sm border border-slate-100">
-                                    <button onclick="editEvent(${ev.id})" class="text-blue-600 font-bold active:bg-blue-100 p-1.5 rounded-md">✏️</button>
-                                    <button onclick="deleteEvent(${ev.id})" class="text-red-500 font-bold active:bg-red-100 p-1.5 rounded-md">✖</button>
+                            // 卡片內縮，極限利用空間
+                            bodyHTML += `<div class="glass-card border-l-[3px] border-l-emerald-500 p-1.5 rounded-lg shadow-sm mb-1 relative group active:scale-[0.98] transition-transform ${isEditing}">
+                                <b class="text-emerald-900 text-[10px] drop-shadow-sm">${ev.startTime || ''}${endTimeStr}</b><br>
+                                <span class="font-bold text-slate-900 text-[11px] leading-tight block my-0.5">${ev.title || '無標題'}</span>
+                                <span class="text-blue-800 font-bold block truncate bg-blue-50/50 inline-block px-1 py-[1px] rounded border border-blue-100/50 mt-0.5 text-[9px]">📍 ${ev.location}</span>
+                                <div class="absolute top-0.5 right-0.5 flex gap-0.5 bg-white/95 p-0.5 rounded shadow-sm border border-slate-100 opacity-90">
+                                    <button onclick="editEvent(${ev.id})" class="text-blue-600 font-bold active:bg-blue-100 px-1 py-0.5 rounded text-[9px]">✏️</button>
+                                    <button onclick="deleteEvent(${ev.id})" class="text-red-500 font-bold active:bg-red-100 px-1 py-0.5 rounded text-[9px]">✖</button>
                                 </div>
                             </div>`;
                         });
@@ -420,22 +399,22 @@
                 body.innerHTML = bodyHTML;
             }
 
-            // 3. Nav View
+            // 3. Nav View (含星期幾 + 終極 Google Map 跳轉)
             const select = document.getElementById('nav-date-select');
-            // 🌟 下拉選單也一併加上星期幾
             select.innerHTML = uniqueDates.map(d => {
                 const dateObj = new Date(d);
                 return `<option value="${d}">${d} (${weekdays[dateObj.getDay()]})</option>`;
             }).join('');
             generateNavLinks();
         }
-function generateNavLinks() {
+
+        function generateNavLinks() {
             const date = document.getElementById('nav-date-select').value;
             const container = document.getElementById('nav-links-container');
             if (!date) return;
             const dayEvents = schedule.filter(e => e.date === date && e.location && e.location.trim() !== '');
             if (dayEvents.length < 2) {
-                container.innerHTML = '<p class="text-slate-700 text-center py-8 font-bold text-lg bg-white/50 rounded-xl">⚠️ 需要至少兩個「有地點」的行程<br>才能產生魔法路線喔！</p>'; return;
+                container.innerHTML = '<p class="text-slate-700 text-center py-6 font-bold text-sm bg-white/50 rounded-xl">⚠️ 需兩個有地點的行程才能產生路線喔！</p>'; return;
             }
             let html = '';
             for (let i = 0; i < dayEvents.length - 1; i++) {
@@ -443,43 +422,40 @@ function generateNavLinks() {
                 const origin = encodeURIComponent(current.location), destination = encodeURIComponent(next.location);
                 const mode = next.mode || 'driving'; 
                 
-                // 🌟 核心修復：使用 Google Maps 官方標準 API 網址
                 const mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${mode}`;
-                
                 const modeIcon = mode === 'transit' ? '🚂 大眾運輸' : (mode === 'walking' ? '🚶 步行' : '🚗 開車');
                 const endTimeDisplay = current.endTime ? current.endTime : (current.startTime || '??:??');
 
                 html += `
                 <div class="flex flex-col items-center">
-                    <div class="w-full glass-card p-4 rounded-2xl shadow-sm">
-                        <span class="text-[11px] font-bold text-emerald-900 bg-emerald-100/80 px-3 py-1 rounded-full inline-block mb-2 border border-emerald-200">區間：${current.startTime || '??:??'} ~ ${endTimeDisplay}</span>
-                        <p class="text-xl font-black text-slate-900">${current.title}</p>
-                        <p class="text-blue-700 text-sm font-bold mt-1.5">📍 ${current.location}</p>
+                    <div class="w-full glass-card p-3 rounded-xl shadow-sm">
+                        <span class="text-[10px] font-bold text-emerald-900 bg-emerald-100/80 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-emerald-200">區間：${current.startTime || '??:??'} ~ ${endTimeDisplay}</span>
+                        <p class="text-base font-black text-slate-900">${current.title}</p>
+                        <p class="text-blue-700 text-[11px] font-bold mt-1">📍 ${current.location}</p>
                     </div>
-                    <div class="my-2 flex flex-col items-center w-full relative">
-                        <div class="h-6 w-1.5 bg-emerald-400/60 rounded shadow-sm"></div>
-                        <div class="flex flex-col items-center bg-blue-50/90 py-4 px-6 rounded-3xl border border-blue-200 w-[95%] shadow-md backdrop-blur-sm">
-                            <p class="text-sm font-bold text-blue-900 mb-3 flex items-center gap-1.5">🕒 於 ${endTimeDisplay} 出發</p>
-                            <a href="${mapUrl}" target="_top" rel="noopener noreferrer" class="flex items-center justify-center gap-2 bg-blue-600/90 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-bold shadow-lg active:scale-95 w-full text-base transition-transform border border-blue-400">
+                    <div class="my-1.5 flex flex-col items-center w-full relative">
+                        <div class="h-4 w-1 bg-emerald-400/60 rounded"></div>
+                        <div class="flex flex-col items-center bg-blue-50/90 py-3 px-4 rounded-2xl border border-blue-200 w-[95%] shadow-md backdrop-blur-sm">
+                            <p class="text-[11px] font-bold text-blue-900 mb-2 flex items-center gap-1">🕒 於 ${endTimeDisplay} 出發</p>
+                            <a href="${mapUrl}" target="_top" rel="noopener noreferrer" class="flex items-center justify-center gap-1.5 bg-blue-600/90 hover:bg-blue-700 text-white px-4 py-2.5 rounded-full font-bold shadow-md active:scale-95 w-full text-[13px] border border-blue-400">
                                 ${modeIcon} 導航至：${next.title}
                             </a>
                         </div>
-                        <div class="h-6 w-1.5 bg-emerald-400/60 rounded shadow-sm"></div>
+                        <div class="h-4 w-1 bg-emerald-400/60 rounded"></div>
                     </div>
                 </div>`;
             }
             const last = dayEvents[dayEvents.length - 1];
             html += `
             <div class="flex flex-col items-center">
-                <div class="w-full bg-emerald-100/80 p-5 rounded-2xl shadow-inner border border-emerald-300 backdrop-blur-md">
-                    <span class="text-[11px] font-bold text-emerald-900 bg-white/60 px-3 py-1 rounded-full inline-block mb-2 border border-white">終點：${last.startTime || '??:??'}${last.endTime && last.endTime !== last.startTime ? ` ~ ${last.endTime}` : ''}</span>
-                    <p class="text-xl font-black text-emerald-950">${last.title}</p>
-                    <p class="text-blue-800 text-sm font-bold mt-1.5">📍 ${last.location}</p>
+                <div class="w-full bg-emerald-100/80 p-4 rounded-xl shadow-inner border border-emerald-300 backdrop-blur-md">
+                    <span class="text-[10px] font-bold text-emerald-900 bg-white/60 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-white">終點：${last.startTime || '??:??'}${last.endTime && last.endTime !== last.startTime ? ` ~ ${last.endTime}` : ''}</span>
+                    <p class="text-base font-black text-emerald-950">${last.title}</p>
+                    <p class="text-blue-800 text-[11px] font-bold mt-1">📍 ${last.location}</p>
                 </div>
             </div>`;
             container.innerHTML = html;
         }
-
 
         renderAll();
     </script>
