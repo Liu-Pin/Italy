@@ -335,18 +335,25 @@
 
         function selectDate(date) { selectedDate = date; renderAll(); }
 
-        function renderAll() {
+       function renderAll() {
             const validSchedule = schedule.filter(s => s.date);
             const uniqueDates = [...new Set(validSchedule.map(s => s.date))].sort();
             if (!selectedDate && uniqueDates.length > 0) selectedDate = uniqueDates[0];
+
+            // 🌟 新增：星期幾的對應陣列 (0是週日，6是週六)
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
             // 1. Daily View
             const dateTabs = document.getElementById('date-tabs');
             dateTabs.innerHTML = '';
             uniqueDates.forEach(date => {
                 const isSelected = date === selectedDate;
-                const btnClass = isSelected ? 'px-5 py-2 bg-emerald-600 text-white rounded-full text-sm font-bold shadow-md whitespace-nowrap' : 'px-5 py-2 bg-white border border-slate-300 text-slate-600 rounded-full text-sm hover:bg-slate-50 active:bg-slate-100 transition whitespace-nowrap';
-                dateTabs.innerHTML += `<button onclick="selectDate('${date}')" class="${btnClass}">${date}</button>`;
+                const btnClass = isSelected ? 'px-5 py-2.5 bg-emerald-600/90 text-white rounded-full text-sm font-bold shadow-md whitespace-nowrap border border-emerald-400 backdrop-blur-sm' : 'px-5 py-2.5 bg-white/60 border border-white/80 text-slate-800 rounded-full text-sm hover:bg-white/80 active:bg-white transition whitespace-nowrap font-semibold backdrop-blur-sm';
+                
+                // 單日詳情的 Tab 也順便加上星期幾，切換更直覺！
+                const d = new Date(date);
+                const dayName = weekdays[d.getDay()];
+                dateTabs.innerHTML += `<button onclick="selectDate('${date}')" class="${btnClass}">${d.getMonth()+1}/${d.getDate()} (${dayName})</button>`;
             });
             const dailyTimeline = document.getElementById('daily-timeline');
             dailyTimeline.innerHTML = '';
@@ -356,15 +363,15 @@
                 
                 dailyTimeline.innerHTML += `
                     <div class="relative pl-7 pb-5 group">
-                        <div class="absolute left-[-6px] top-2 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow"></div>
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-start justify-between ${isEditing} transition-all active:scale-[0.98]">
+                        <div class="absolute left-[-7px] top-3 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-white shadow-md"></div>
+                        <div class="glass-card p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-start justify-between ${isEditing} transition-all active:scale-[0.98]">
                             <div>
-                                <b class="text-emerald-800 text-lg">${event.startTime || '??:??'}${endTimeStr}</b> - <span class="text-slate-900 font-semibold">${event.title}</span><br>
-                                <span class="text-blue-600 text-sm font-medium">📍 ${event.location || '未設定'}</span>
+                                <b class="text-emerald-900 text-lg drop-shadow-sm">${event.startTime || '??:??'}${endTimeStr}</b> - <span class="text-slate-900 font-bold text-lg">${event.title}</span><br>
+                                <span class="text-blue-700 text-sm font-bold mt-1 inline-block bg-blue-50/50 px-2 py-0.5 rounded-md border border-blue-100/50">📍 ${event.location || '未設定'}</span>
                             </div>
                             <div class="mt-3 sm:mt-0 flex gap-2 shrink-0">
-                                <button onclick="editEvent(${event.id})" class="px-3.5 py-1.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg border border-blue-100 active:bg-blue-200 transition">✏️ 修改</button>
-                                <button onclick="deleteEvent(${event.id})" class="px-3.5 py-1.5 bg-red-50 text-red-500 text-xs font-bold rounded-lg border border-red-100 active:bg-red-200 transition">🗑️ 刪除</button>
+                                <button onclick="editEvent(${event.id})" class="px-4 py-2 bg-blue-100/80 text-blue-700 text-xs font-bold rounded-xl border border-blue-200 active:bg-blue-200 transition shadow-sm">✏️ 修改</button>
+                                <button onclick="deleteEvent(${event.id})" class="px-4 py-2 bg-red-100/80 text-red-600 text-xs font-bold rounded-xl border border-red-200 active:bg-red-200 transition shadow-sm">🗑️ 刪除</button>
                             </div>
                         </div>
                     </div>`;
@@ -374,33 +381,35 @@
             const head = document.getElementById('timetable-head');
             const body = document.getElementById('timetable-body');
             if (uniqueDates.length === 0) {
-                head.innerHTML = '<tr><th class="p-4 text-center">🧸 這裡空空的，快去新增第一筆旅程吧！</th></tr>'; body.innerHTML = '';
+                head.innerHTML = '<tr><th class="p-6 text-center text-slate-700 font-bold text-lg">🧸 這裡空空的，快點擊上方「新增旅程片段」吧！</th></tr>'; body.innerHTML = '';
             } else {
-                let headHTML = '<tr><th class="p-3 border-b border-r bg-slate-200 sticky left-0 z-30 sticky-col w-20 text-center font-bold text-slate-600">時間</th>';
+                let headHTML = '<tr><th class="p-3 border-b border-white/40 border-r bg-white/40 sticky left-0 z-30 sticky-col w-20 text-center font-bold text-slate-700 backdrop-blur-md">時間</th>';
                 uniqueDates.forEach(date => {
                     const d = new Date(date);
-                    headHTML += `<th class="p-3 border-b text-center bg-slate-200 min-w-[200px] font-extrabold text-lg text-emerald-950">${d.getMonth()+1}/${d.getDate()}</th>`;
+                    const dayName = weekdays[d.getDay()]; // 🌟 取得星期幾
+                    // 🌟 將 (星期X) 加入到表頭中
+                    headHTML += `<th class="p-3 border-b border-white/40 text-center min-w-[200px] font-black text-xl text-emerald-900 drop-shadow-sm">${d.getMonth()+1}/${d.getDate()} <span class="text-base text-emerald-700">(${dayName})</span></th>`;
                 });
                 head.innerHTML = headHTML + '</tr>';
                 
                 let bodyHTML = '';
                 for (let hour = 6; hour <= 23; hour++) {
                     const hourStr = hour.toString().padStart(2, '0');
-                    bodyHTML += `<tr class="border-b active:bg-slate-100/50"><td class="p-2 border-r text-center sticky left-0 bg-slate-50/90 z-10 sticky-col font-bold text-slate-500 backdrop-blur-sm text-xs">${hourStr}:00</td>`;
+                    bodyHTML += `<tr class="border-b border-white/30"><td class="p-2 border-r border-white/40 text-center sticky left-0 bg-white/50 z-10 sticky-col font-black text-slate-600 backdrop-blur-md text-sm">${hourStr}:00</td>`;
                     uniqueDates.forEach(date => {
                         const events = validSchedule.filter(e => e.date === date && e.startTime && e.startTime.startsWith(hourStr));
-                        bodyHTML += `<td class="p-2 border-r align-top border-dashed border-slate-200">`;
+                        bodyHTML += `<td class="p-2 border-r border-white/30 align-top">`;
                         events.forEach(ev => {
                             const endTimeStr = ev.endTime && ev.endTime !== ev.startTime ? `~${ev.endTime}` : '';
                             const isEditing = editingId === ev.id ? 'editing-card' : '';
                             
-                            bodyHTML += `<div class="bg-white border-l-4 border-emerald-500 p-3 text-xs rounded-xl shadow mb-2 relative group active:scale-[0.98] transition-all ${isEditing}">
-                                <b class="text-emerald-800 text-sm">${ev.startTime || ''}${endTimeStr}</b><br>
-                                <span class="font-bold text-slate-900 text-sm leading-tight block my-1">${ev.title || '無標題'}</span>
-                                <span class="text-blue-600 truncate block font-medium">📍 ${ev.location}</span>
+                            bodyHTML += `<div class="glass-card border-l-4 border-l-emerald-500 p-3 text-xs rounded-xl shadow-sm mb-2 relative group active:scale-[0.98] transition-all ${isEditing}">
+                                <b class="text-emerald-900 text-sm drop-shadow-sm">${ev.startTime || ''}${endTimeStr}</b><br>
+                                <span class="font-bold text-slate-900 text-[15px] leading-tight block my-1">${ev.title || '無標題'}</span>
+                                <span class="text-blue-800 font-bold block truncate bg-blue-50/50 inline-block px-1.5 py-0.5 rounded border border-blue-100/50 mt-1">📍 ${ev.location}</span>
                                 <div class="absolute top-1 right-1 flex gap-1 bg-white/90 p-1 rounded-lg shadow-sm border border-slate-100">
-                                    <button onclick="editEvent(${ev.id})" class="text-blue-500 active:bg-blue-100 p-1 rounded-md">✏️</button>
-                                    <button onclick="deleteEvent(${ev.id})" class="text-red-500 active:bg-red-100 p-1 rounded-md">✖</button>
+                                    <button onclick="editEvent(${ev.id})" class="text-blue-600 font-bold active:bg-blue-100 p-1.5 rounded-md">✏️</button>
+                                    <button onclick="deleteEvent(${ev.id})" class="text-red-500 font-bold active:bg-red-100 p-1.5 rounded-md">✖</button>
                                 </div>
                             </div>`;
                         });
@@ -413,7 +422,11 @@
 
             // 3. Nav View
             const select = document.getElementById('nav-date-select');
-            select.innerHTML = uniqueDates.map(d => `<option value="${d}">${d}</option>`).join('');
+            // 🌟 下拉選單也一併加上星期幾
+            select.innerHTML = uniqueDates.map(d => {
+                const dateObj = new Date(d);
+                return `<option value="${d}">${d} (${weekdays[dateObj.getDay()]})</option>`;
+            }).join('');
             generateNavLinks();
         }
 function generateNavLinks() {
