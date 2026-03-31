@@ -101,6 +101,10 @@
                         <label class="block text-[11px] font-bold text-slate-800 mb-1 pl-1">行程內容 *</label>
                         <input type="text" id="event-title" placeholder="如: 參觀大教堂" class="w-full px-3 py-2 border border-white/50 focus:ring-2 focus:ring-emerald-400 text-sm" required>
                     </div>
+                    <div class="flex-[1.5] min-w-[150px]">
+                        <label class="block text-[11px] font-bold text-indigo-900 mb-1 pl-1">🎫 票券/雲端連結 (可留白)</label>
+                        <input type="url" id="event-ticket" placeholder="貼上 Google Drive 等連結" class="w-full px-3 py-2 border border-indigo-300/50 focus:ring-2 focus:ring-indigo-400 text-sm" style="background-color: rgba(238, 242, 255, 0.7) !important;">
+                    </div>
                     
                     <div class="flex gap-2 min-w-[160px] w-full mt-1">
                         <button type="submit" id="submit-btn" class="flex-1 px-4 py-2.5 bg-emerald-600/90 hover:bg-emerald-700 text-white font-bold rounded-xl active:scale-95 shadow-md text-sm border border-emerald-400">➕ 新增行程</button>
@@ -154,7 +158,6 @@
     </nav>
 
     <script>
-        // 🌟 星期幾對應表 (全域變數)
         const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
         let schedule = [];
@@ -209,6 +212,7 @@
             let evMode = document.getElementById('event-mode').value;
             let evLoc = document.getElementById('event-location').value.trim();
             let evTitle = document.getElementById('event-title').value || '';
+            let evTicket = document.getElementById('event-ticket').value.trim(); // 讀取票券連結
 
             if (!evEnd) evEnd = evStart;
 
@@ -226,7 +230,8 @@
             if (!evMode) evMode = prevEvent ? prevEvent.mode : 'driving';
             if (!evLoc) evLoc = prevEvent ? prevEvent.location : '';
 
-            const finalEventData = { date: evDate, startTime: evStart, endTime: evEnd, mode: evMode, location: evLoc, title: evTitle };
+            // 將 ticketUrl 加入資料中
+            const finalEventData = { date: evDate, startTime: evStart, endTime: evEnd, mode: evMode, location: evLoc, title: evTitle, ticketUrl: evTicket };
 
             if (editingId) {
                 const index = schedule.findIndex(s => s.id === editingId);
@@ -250,6 +255,7 @@
             document.getElementById('event-mode').value = ev.mode || '';
             document.getElementById('event-location').value = ev.location;
             document.getElementById('event-title').value = ev.title;
+            document.getElementById('event-ticket').value = ev.ticketUrl || ''; // 載入舊的票券連結
 
             const wrapper = document.getElementById('form-wrapper');
             if (wrapper.classList.contains('form-collapsed')) toggleForm();
@@ -321,7 +327,7 @@
             const uniqueDates = [...new Set(validSchedule.map(s => s.date))].sort();
             if (!selectedDate && uniqueDates.length > 0) selectedDate = uniqueDates[0];
 
-            // 1. Daily View (含星期幾)
+            // 1. Daily View
             const dateTabs = document.getElementById('date-tabs');
             dateTabs.innerHTML = '';
             uniqueDates.forEach(date => {
@@ -331,11 +337,17 @@
                 const btnClass = isSelected ? 'px-4 py-2 bg-emerald-600/90 text-white rounded-full text-[11px] font-bold shadow-md whitespace-nowrap border border-emerald-400 backdrop-blur-sm' : 'px-4 py-2 bg-white/60 border border-white/80 text-slate-800 rounded-full text-[11px] font-semibold hover:bg-white/80 transition whitespace-nowrap backdrop-blur-sm';
                 dateTabs.innerHTML += `<button onclick="selectDate('${date}')" class="${btnClass}">${d.getMonth()+1}/${d.getDate()} (${dayName})</button>`;
             });
+            
             const dailyTimeline = document.getElementById('daily-timeline');
             dailyTimeline.innerHTML = '';
             validSchedule.filter(e => e.date === selectedDate).forEach(event => {
                 const endTimeStr = event.endTime && event.endTime !== event.startTime ? `~${event.endTime}` : '';
                 const isEditing = editingId === event.id ? 'editing-card' : '';
+                
+                // 產生票券按鈕 (如果有填寫連結的話)
+                const ticketBtn = event.ticketUrl 
+                    ? `<a href="${event.ticketUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-700 text-[11px] font-bold mt-1 ml-1 inline-block bg-indigo-50/90 px-2 py-0.5 rounded border border-indigo-200 active:scale-95 transition-transform shadow-sm">🎫 開啟票券</a>` 
+                    : '';
                 
                 dailyTimeline.innerHTML += `
                     <div class="relative pl-5 pb-4 group">
@@ -345,27 +357,25 @@
                                 <b class="text-emerald-900 text-[13px] drop-shadow-sm">${event.startTime || '??:??'}${endTimeStr}</b>
                                 <span class="text-slate-900 font-bold text-[14px] ml-1">${event.title}</span><br>
                                 <span class="text-blue-700 text-[11px] font-bold mt-1 inline-block bg-blue-50/50 px-1.5 py-0.5 rounded border border-blue-100/50">📍 ${event.location || '未設定'}</span>
-                            </div>
+                                ${ticketBtn} </div>
                             <div class="mt-2 sm:mt-0 flex gap-1.5 shrink-0">
-                                <button onclick="editEvent(${event.id})" class="px-2.5 py-1.5 bg-blue-100/80 text-blue-700 text-[10px] font-bold rounded-lg border border-blue-200 active:bg-blue-200">✏️ 修改</button>
-                                <button onclick="deleteEvent(${event.id})" class="px-2.5 py-1.5 bg-red-100/80 text-red-600 text-[10px] font-bold rounded-lg border border-red-200 active:bg-red-200">🗑️ 刪除</button>
+                                <button onclick="editEvent(${event.id})" class="px-2.5 py-1.5 bg-blue-100/80 text-blue-700 text-[10px] font-bold rounded-lg border border-blue-200 active:bg-blue-200">✏️</button>
+                                <button onclick="deleteEvent(${event.id})" class="px-2.5 py-1.5 bg-red-100/80 text-red-600 text-[10px] font-bold rounded-lg border border-red-200 active:bg-red-200">🗑️</button>
                             </div>
                         </div>
                     </div>`;
             });
 
-            // 2. 🌟 終極緊湊版 Timetable (含星期幾 + 移除多餘寬度)
+            // 2. Timetable View
             const head = document.getElementById('timetable-head');
             const body = document.getElementById('timetable-body');
             if (uniqueDates.length === 0) {
                 head.innerHTML = '<tr><th class="p-4 text-center text-slate-700 font-bold text-sm">🧸 空空的，請新增行程！</th></tr>'; body.innerHTML = '';
             } else {
-                // 最左邊的時間軸極度縮小 (w-12)
                 let headHTML = '<tr><th class="p-1 border-b border-white/40 border-r bg-white/60 sticky left-0 z-30 sticky-col w-12 text-center font-bold text-slate-700 backdrop-blur-md text-[10px]">時間</th>';
                 uniqueDates.forEach(date => {
                     const d = new Date(date);
                     const dayName = weekdays[d.getDay()];
-                    // 每一天的欄位寬度取消死板限制，利用 min-w-[110px] 讓內容自然撐開
                     headHTML += `<th class="p-1.5 border-b border-white/40 text-center min-w-[110px] font-black text-[13px] text-emerald-900 drop-shadow-sm">${d.getMonth()+1}/${d.getDate()} <span class="text-[10px] text-emerald-700">(${dayName})</span></th>`;
                 });
                 head.innerHTML = headHTML + '</tr>';
@@ -381,10 +391,14 @@
                             const endTimeStr = ev.endTime && ev.endTime !== ev.startTime ? `~${ev.endTime}` : '';
                             const isEditing = editingId === ev.id ? 'editing-card' : '';
                             
-                            // 卡片內縮，極限利用空間
+                            // 產生緊湊版票券小圖示
+                            const ticketIcon = ev.ticketUrl 
+                                ? `<a href="${ev.ticketUrl}" target="_blank" rel="noopener noreferrer" class="inline-block ml-1 text-[12px] drop-shadow-md hover:scale-125 transition-transform" title="開啟票券">🎟️</a>` 
+                                : '';
+                            
                             bodyHTML += `<div class="glass-card border-l-[3px] border-l-emerald-500 p-1.5 rounded-lg shadow-sm mb-1 relative group active:scale-[0.98] transition-transform ${isEditing}">
                                 <b class="text-emerald-900 text-[10px] drop-shadow-sm">${ev.startTime || ''}${endTimeStr}</b><br>
-                                <span class="font-bold text-slate-900 text-[11px] leading-tight block my-0.5">${ev.title || '無標題'}</span>
+                                <span class="font-bold text-slate-900 text-[11px] leading-tight block my-0.5">${ev.title || '無標題'} ${ticketIcon}</span>
                                 <span class="text-blue-800 font-bold block truncate bg-blue-50/50 inline-block px-1 py-[1px] rounded border border-blue-100/50 mt-0.5 text-[9px]">📍 ${ev.location}</span>
                                 <div class="absolute top-0.5 right-0.5 flex gap-0.5 bg-white/95 p-0.5 rounded shadow-sm border border-slate-100 opacity-90">
                                     <button onclick="editEvent(${ev.id})" class="text-blue-600 font-bold active:bg-blue-100 px-1 py-0.5 rounded text-[9px]">✏️</button>
@@ -399,7 +413,7 @@
                 body.innerHTML = bodyHTML;
             }
 
-            // 3. Nav View (含星期幾 + 終極 Google Map 跳轉)
+            // 3. Nav View
             const select = document.getElementById('nav-date-select');
             select.innerHTML = uniqueDates.map(d => {
                 const dateObj = new Date(d);
@@ -425,13 +439,12 @@
                 const origin = encodeURIComponent(current.location);
                 const destination = encodeURIComponent(next.location);
                 
-                // 處理交通方式與 Google Maps API 的對應
                 let mode = next.mode || 'driving';
                 let gmapsMode = 'driving';
                 if (mode === 'transit') gmapsMode = 'transit';
                 if (mode === 'walking') gmapsMode = 'walking';
                 
-                // 建立兩種導航網址：有起點 vs 無起點(自動抓當下位置)
+                // 使用 Google Maps 官方標準 API 網址，跳轉更穩定
                 const urlFromPrev = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${gmapsMode}`;
                 const urlFromCurrent = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=${gmapsMode}`;
                 
@@ -476,7 +489,6 @@
             </div>`;
             container.innerHTML = html;
         }
-
 
         renderAll();
     </script>
