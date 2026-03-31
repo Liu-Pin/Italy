@@ -428,67 +428,66 @@
             if (!date) return;
             const dayEvents = schedule.filter(e => e.date === date && e.location && e.location.trim() !== '');
             
-            if (dayEvents.length < 2) {
-                container.innerHTML = '<p class="text-slate-700 text-center py-6 font-bold text-sm bg-white/50 rounded-xl">⚠️ 需兩個有地點的行程才能產生路線喔！</p>'; 
+            if (dayEvents.length === 0) {
+                container.innerHTML = '<p class="text-slate-700 text-center py-6 font-bold text-sm bg-white/50 rounded-xl">⚠️ 這天還沒有設定任何有地點的行程喔！</p>'; 
                 return;
             }
             
             let html = '';
-            for (let i = 0; i < dayEvents.length - 1; i++) {
-                const current = dayEvents[i], next = dayEvents[i+1];
-                const origin = encodeURIComponent(current.location);
-                const destination = encodeURIComponent(next.location);
+            for (let i = 0; i < dayEvents.length; i++) {
+                const current = dayEvents[i];
+                const destination = encodeURIComponent(current.location);
+                const endTimeDisplay = current.endTime ? current.endTime : (current.startTime || '');
+                const timeStr = current.startTime ? `${current.startTime} ${endTimeDisplay !== current.startTime ? '~ ' + endTimeDisplay : ''}` : '時間未定';
                 
-                let mode = next.mode || 'driving';
-                let gmapsMode = 'driving';
-                if (mode === 'transit') gmapsMode = 'transit';
-                if (mode === 'walking') gmapsMode = 'walking';
-                
-                // 使用 Google Maps 官方標準 API 網址，跳轉更穩定
-                const urlFromPrev = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${gmapsMode}`;
-                const urlFromCurrent = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=${gmapsMode}`;
-                
-                const modeIcon = mode === 'transit' ? '🚂 大眾運輸' : (mode === 'walking' ? '🚶 步行' : '🚗 開車');
-                const endTimeDisplay = current.endTime ? current.endTime : (current.startTime || '??:??');
+                // 1. 每個景點都有專屬的「從目前位置導航至此」按鈕
+                const urlFromCurrent = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
 
                 html += `
                 <div class="flex flex-col items-center">
-                    <div class="w-full glass-card p-3 rounded-xl shadow-sm">
-                        <span class="text-[10px] font-bold text-emerald-900 bg-emerald-100/80 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-emerald-200">區間：${current.startTime || '??:??'} ~ ${endTimeDisplay}</span>
+                    <div class="w-full glass-card p-4 rounded-xl shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500"></div>
+                        <span class="text-[10px] font-bold text-emerald-900 bg-emerald-100/80 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-emerald-200">${timeStr}</span>
                         <p class="text-base font-black text-slate-900">${current.title}</p>
-                        <p class="text-blue-700 text-[11px] font-bold mt-1">📍 ${current.location}</p>
-                    </div>
+                        <p class="text-blue-700 text-[11px] font-bold mt-1 mb-3">📍 ${current.location}</p>
+                        
+                        <a href="${urlFromCurrent}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-1.5 bg-emerald-600/90 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl font-bold shadow-md active:scale-95 text-[12px] border border-emerald-400 w-full transition">
+                            📍 從目前位置導航至此
+                        </a>
+                    </div>`;
+
+                // 2. 如果不是最後一個景點，在下方渲染「前往下一站」的連線區塊
+                if (i < dayEvents.length - 1) {
+                    const next = dayEvents[i+1];
+                    const nextDestination = encodeURIComponent(next.location);
+                    const currentOrigin = encodeURIComponent(current.location);
+                    
+                    let mode = next.mode || 'driving';
+                    let gmapsMode = 'driving';
+                    if (mode === 'transit') gmapsMode = 'transit';
+                    if (mode === 'walking') gmapsMode = 'walking';
+                    
+                    // 區間專屬的「從上個景點出發」網址
+                    const urlFromPrev = `https://www.google.com/maps/dir/?api=1&origin=${currentOrigin}&destination=${nextDestination}&travelmode=${gmapsMode}`;
+                    const modeIcon = mode === 'transit' ? '🚂 大眾運輸' : (mode === 'walking' ? '🚶 步行' : '🚗 開車');
+
+                    html += `
                     <div class="my-1.5 flex flex-col items-center w-full relative">
-                        <div class="h-4 w-1 bg-emerald-400/60 rounded"></div>
-                        <div class="flex flex-col items-center bg-blue-50/90 py-3 px-4 rounded-2xl border border-blue-200 w-[95%] shadow-md backdrop-blur-sm">
-                            <p class="text-[11px] font-bold text-blue-900 mb-2 flex items-center gap-1">前往：${next.title}</p>
-                            
-                            <div class="flex flex-col sm:flex-row gap-2 w-full">
-                                <a href="${urlFromPrev}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 bg-blue-600/90 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl font-bold shadow-md active:scale-95 text-[12px] border border-blue-400 text-center">
-                                    🗺️ 從上個景點出發
-                                </a>
-                                <a href="${urlFromCurrent}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 bg-emerald-600/90 hover:bg-emerald-700 text-white px-3 py-2.5 rounded-xl font-bold shadow-md active:scale-95 text-[12px] border border-emerald-400 text-center">
-                                    📍 從目前位置出發
-                                </a>
-                            </div>
-                            <div class="text-[10px] text-blue-700/80 mt-2 font-bold">${modeIcon}</div>
-                            
+                        <div class="h-4 w-1 bg-emerald-400/50 rounded"></div>
+                        <div class="flex flex-col items-center bg-blue-50/80 py-3 px-4 rounded-2xl border border-blue-200 w-[90%] shadow-sm backdrop-blur-sm">
+                            <p class="text-[10px] font-bold text-blue-800 mb-2 flex items-center gap-1">前往下一站：${next.title}</p>
+                            <a href="${urlFromPrev}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-1 bg-blue-600/90 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl font-bold shadow-md active:scale-95 text-[12px] border border-blue-400 text-center w-full transition">
+                                🗺️ 從 ${current.title} 出發 (${modeIcon})
+                            </a>
                         </div>
-                        <div class="h-4 w-1 bg-emerald-400/60 rounded"></div>
-                    </div>
-                </div>`;
+                        <div class="h-4 w-1 bg-emerald-400/50 rounded"></div>
+                    </div>`;
+                }
+                html += `</div>`; // 結束這個景點的 flex 容器
             }
-            const last = dayEvents[dayEvents.length - 1];
-            html += `
-            <div class="flex flex-col items-center">
-                <div class="w-full bg-emerald-100/80 p-4 rounded-xl shadow-inner border border-emerald-300 backdrop-blur-md">
-                    <span class="text-[10px] font-bold text-emerald-900 bg-white/60 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-white">終點：${last.startTime || '??:??'}${last.endTime && last.endTime !== last.startTime ? ` ~ ${last.endTime}` : ''}</span>
-                    <p class="text-base font-black text-emerald-950">${last.title}</p>
-                    <p class="text-blue-800 text-[11px] font-bold mt-1">📍 ${last.location}</p>
-                </div>
-            </div>`;
             container.innerHTML = html;
         }
+
 
         renderAll();
     </script>
