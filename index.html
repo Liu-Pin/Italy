@@ -413,16 +413,28 @@
             const container = document.getElementById('nav-links-container');
             if (!date) return;
             const dayEvents = schedule.filter(e => e.date === date && e.location && e.location.trim() !== '');
+            
             if (dayEvents.length < 2) {
-                container.innerHTML = '<p class="text-slate-700 text-center py-6 font-bold text-sm bg-white/50 rounded-xl">⚠️ 需兩個有地點的行程才能產生路線喔！</p>'; return;
+                container.innerHTML = '<p class="text-slate-700 text-center py-6 font-bold text-sm bg-white/50 rounded-xl">⚠️ 需兩個有地點的行程才能產生路線喔！</p>'; 
+                return;
             }
+            
             let html = '';
             for (let i = 0; i < dayEvents.length - 1; i++) {
                 const current = dayEvents[i], next = dayEvents[i+1];
-                const origin = encodeURIComponent(current.location), destination = encodeURIComponent(next.location);
-                const mode = next.mode || 'driving'; 
+                const origin = encodeURIComponent(current.location);
+                const destination = encodeURIComponent(next.location);
                 
-                const mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${mode}`;
+                // 處理交通方式與 Google Maps API 的對應
+                let mode = next.mode || 'driving';
+                let gmapsMode = 'driving';
+                if (mode === 'transit') gmapsMode = 'transit';
+                if (mode === 'walking') gmapsMode = 'walking';
+                
+                // 建立兩種導航網址：有起點 vs 無起點(自動抓當下位置)
+                const urlFromPrev = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${gmapsMode}`;
+                const urlFromCurrent = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=${gmapsMode}`;
+                
                 const modeIcon = mode === 'transit' ? '🚂 大眾運輸' : (mode === 'walking' ? '🚶 步行' : '🚗 開車');
                 const endTimeDisplay = current.endTime ? current.endTime : (current.startTime || '??:??');
 
@@ -436,10 +448,18 @@
                     <div class="my-1.5 flex flex-col items-center w-full relative">
                         <div class="h-4 w-1 bg-emerald-400/60 rounded"></div>
                         <div class="flex flex-col items-center bg-blue-50/90 py-3 px-4 rounded-2xl border border-blue-200 w-[95%] shadow-md backdrop-blur-sm">
-                            <p class="text-[11px] font-bold text-blue-900 mb-2 flex items-center gap-1">🕒 於 ${endTimeDisplay} 出發</p>
-                            <a href="${mapUrl}" target="_top" rel="noopener noreferrer" class="flex items-center justify-center gap-1.5 bg-blue-600/90 hover:bg-blue-700 text-white px-4 py-2.5 rounded-full font-bold shadow-md active:scale-95 w-full text-[13px] border border-blue-400">
-                                ${modeIcon} 導航至：${next.title}
-                            </a>
+                            <p class="text-[11px] font-bold text-blue-900 mb-2 flex items-center gap-1">前往：${next.title}</p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-2 w-full">
+                                <a href="${urlFromPrev}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 bg-blue-600/90 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl font-bold shadow-md active:scale-95 text-[12px] border border-blue-400 text-center">
+                                    🗺️ 從上個景點出發
+                                </a>
+                                <a href="${urlFromCurrent}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 bg-emerald-600/90 hover:bg-emerald-700 text-white px-3 py-2.5 rounded-xl font-bold shadow-md active:scale-95 text-[12px] border border-emerald-400 text-center">
+                                    📍 從目前位置出發
+                                </a>
+                            </div>
+                            <div class="text-[10px] text-blue-700/80 mt-2 font-bold">${modeIcon}</div>
+                            
                         </div>
                         <div class="h-4 w-1 bg-emerald-400/60 rounded"></div>
                     </div>
@@ -456,6 +476,7 @@
             </div>`;
             container.innerHTML = html;
         }
+
 
         renderAll();
     </script>
